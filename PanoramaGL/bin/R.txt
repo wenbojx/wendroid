@@ -1,0 +1,6 @@
+int drawable ic_launcher 0x7f020000
+int raw hotspot 0x7f030000
+int raw json 0x7f030001
+int raw pano 0x7f030002
+int string app_name 0x7f040000
+int style AppTheme 0x7f050000
