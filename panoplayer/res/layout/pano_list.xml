@@ -1,0 +1,20 @@
+<LinearLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="fill_parent"
+  android:layout_height="fill_parent"
+  android:orientation="vertical">
+  <ImageView  
+    android:layout_width="fill_parent"  
+    android:layout_height="200px"  
+    android:id="@+id/map"  
+    android:scaleType="center"  
+    android:background="#fff"  
+    android:src="@raw/panorama" 
+    />
+    
+  <ListView android:id="@android:id/list"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:drawSelectorOnTop="false"/>
+</LinearLayout>

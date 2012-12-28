@@ -1,5 +1,5 @@
 {
-    "urlBase": "res://raw",
+    "urlBase": "file://http://192.168.2.102/html/pano-6001.jpg",
     "type": "cylindrical",
     "sensorialRotation": false,
     "scrolling":

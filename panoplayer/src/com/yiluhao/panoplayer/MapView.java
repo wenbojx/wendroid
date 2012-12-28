@@ -11,9 +11,6 @@ import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 
 public class MapView extends View {
-	
-	
-	// 控制地图移动速度
 	int scrollRate = 50;
 	
 	boolean scrollHorizontalEnabled = true;

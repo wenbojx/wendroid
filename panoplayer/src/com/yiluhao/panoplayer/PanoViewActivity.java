@@ -1,181 +1,246 @@
 package com.yiluhao.panoplayer;
 
+import java.io.IOException;
 
-import java.util.Random;
 
-import javax.microedition.khronos.opengles.GL10;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.openpanodroid.PanodroidGLView;
+import org.openpanodroid.panoutils.android.CubicPanoNative;
+import org.openpanodroid.panoutils.android.CubicPanoNative.TextureFaces;
 
+import com.yiluhao.utils.ImagesUtil;
+import com.yiluhao.utils.IoUtil;
+
+import junit.framework.Assert;
+
+import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.ViewGroup.LayoutParams;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Spinner;
-import android.widget.Toast;
-import android.widget.ZoomControls;
-import android.widget.AdapterView.OnItemSelectedListener;
+import android.util.Log;
 
-import com.panoramagl.PLCubicPanorama;
-import com.panoramagl.PLCylindricalPanorama;
-import com.panoramagl.PLILoader;
-import com.panoramagl.PLIPanorama;
-import com.panoramagl.PLIView;
-import com.panoramagl.PLImage;
-import com.panoramagl.PLJSONLoader;
-import com.panoramagl.PLSpherical2Panorama;
-import com.panoramagl.PLSphericalPanorama;
-import com.panoramagl.PLView;
-import com.panoramagl.PLViewEventListener;
-import com.panoramagl.enumeration.PLCubeFaceOrientation;
-import com.panoramagl.hotspots.PLHotspot;
-import com.panoramagl.ios.structs.CGPoint;
-import com.panoramagl.structs.PLPosition;
-import com.panoramagl.utils.PLUtils;
+public class PanoViewActivity extends Activity {
 
-public class PanoViewActivity extends PLView{
-	/**constants*/
-	
-	private static final int kHotspotIdMin = 1;
-	private static final int kHotspotIdMax = 1000;
-	
-	/**member variables*/
-	
-	private Random random = new Random();
-	
-	/**init methods*/
-	
-    @Override
-    public void onCreate(Bundle savedInstanceState)
-    {
-        super.onCreate(savedInstanceState);
-        //this.loadPanorama(1);
-        loadPanoramaFromJSON(0);
-        this.setListener(new PLViewEventListener()
-        {
-        	@Override
-    		public void onDidClickHotspot(PLIView pView, PLHotspot hotspot, CGPoint screenPoint, PLPosition scene3DPoint)
-        	{
-        		Toast.makeText(pView.getActivity(), String.format("You select the hotspot with ID %d", hotspot.getIdentifier()), Toast.LENGTH_SHORT).show();
-        	}
-		});
-    }
-    /**
-     * This event is fired when OpenGL renderer was created
-     * @param gl Current OpenGL context
-     */
-    @Override
-	protected void onGLContextCreated(GL10 gl)
-	{
-    	super.onGLContextCreated(gl);
-    	
-    	//Add layout
-    	View mainView = this.getLayoutInflater().inflate(R.layout.pano_view, null);
-        this.addContentView(mainView, new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
-        
-        /*//Spinner control
-        Spinner panoramaTypeSpinner = (Spinner)mainView.findViewById(R.id.spinner_panorama_type);
-        ArrayAdapter<?> adapter = ArrayAdapter.createFromResource(this, R.array.panorama_types, android.R.layout.simple_spinner_item);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        panoramaTypeSpinner.setAdapter(adapter);
-        panoramaTypeSpinner.setOnItemSelectedListener(new OnItemSelectedListener()
-        {
-			@Override
-			public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id)
-			{
-				loadPanoramaFromJSON(position);
-			}
 
-			@Override
-			public void onNothingSelected(AdapterView<?> parentView)
-			{
-			}
-		});*/
-        
-        //Zoom controls
-        ZoomControls zoomControls = (ZoomControls)mainView.findViewById(R.id.zoomControls);
-        zoomControls.setOnZoomInClickListener(new OnClickListener()
-        {	
-			@Override
-			public void onClick(View view)
-			{
-				getCamera().zoomIn(true);
-			}
-		});
-        zoomControls.setOnZoomOutClickListener(new OnClickListener()
-        {	
-			@Override
-			public void onClick(View view)
-			{
-				getCamera().zoomOut(true);
-			}
-		});
+	private static final String LOG_TAG = PanoViewActivity.class
+			.getSimpleName();
+
+	private CubicPanoNative cubicPano = null;
+	private PanodroidGLView glView = null;
+	private String pano_id = "";
+	private String project_id = "";
+	private JSONObject panoInfo = null;
+	
+	private ProgressDialog waitDialog = null;
+
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.pano_view);
+
+		Intent intent = getIntent();
+		Bundle extras = intent.getExtras();
+		if (extras != null) {
+			pano_id = extras.getString("pano_id");
+			project_id = extras.getString("project_id");
+		}
+		Log.v("ids=", pano_id + "-" + project_id);
+		getPanoDetail();
+		//getPanoFace();
+		
+		LoadFaceAsyncTask asyncTask = new LoadFaceAsyncTask();  
+        asyncTask.execute();
+		// setupOpenGLView();
 	}
-/**load methods*/
-    
-    /**
-     * Load panorama image manually
-     * @param index Spinner position where 0 = spherical, 1 = spherical2, 2 = cubic, 3 = cylindrical
-     */
-    private void loadPanorama(int index)
-    {
-    	GL10 gl = this.getCurrentGL();
-    	PLIPanorama panorama = null;
-    	//Lock panoramic view
-    	this.setBlocked(true);
-    	//Spherical panorama example (supports up 1024x512 texture)
-    	if(index == 0)
-        {
-            panorama = new PLSphericalPanorama();
-            ((PLSphericalPanorama)panorama).setImage(gl, PLImage.imageWithBitmap(PLUtils.getBitmap(this, R.raw.pano_sphere1), false));
-        }
-        //Spherical2 panorama example (only support 2048x1024 texture)
-        else if(index == 1)
-        {
-        	panorama = new PLSpherical2Panorama();
-            ((PLSpherical2Panorama)panorama).setImage(gl, PLImage.imageWithBitmap(PLUtils.getBitmap(this, R.raw.pano_sphere1), false));
-        }
-        //Cubic panorama example (supports up 1024x1024 texture per face)
-        else if(index == 2)
-        {
-        	/*PLCubicPanorama cubicPanorama = new PLCubicPanorama();
-        	cubicPanorama.setImage(gl, PLImage.imageWithBitmap(PLUtils.getBitmap(this, R.raw.pano_f), false), PLCubeFaceOrientation.PLCubeFaceOrientationFront);
-        	cubicPanorama.setImage(gl, PLImage.imageWithBitmap(PLUtils.getBitmap(this, R.raw.pano_b), false), PLCubeFaceOrientation.PLCubeFaceOrientationBack);
-        	cubicPanorama.setImage(gl, PLImage.imageWithBitmap(PLUtils.getBitmap(this, R.raw.pano_l), false), PLCubeFaceOrientation.PLCubeFaceOrientationLeft);
-        	cubicPanorama.setImage(gl, PLImage.imageWithBitmap(PLUtils.getBitmap(this, R.raw.pano_r), false), PLCubeFaceOrientation.PLCubeFaceOrientationRight);
-        	cubicPanorama.setImage(gl, PLImage.imageWithBitmap(PLUtils.getBitmap(this, R.raw.pano_u), false), PLCubeFaceOrientation.PLCubeFaceOrientationUp);
-        	cubicPanorama.setImage(gl, PLImage.imageWithBitmap(PLUtils.getBitmap(this, R.raw.pano_d), false), PLCubeFaceOrientation.PLCubeFaceOrientationDown);
-            panorama = cubicPanorama;*/
-        }
-        //Cylindrical panorama example (supports up 1024x1024 texture)
-        else if(index == 3)
-        {
-        	/*PLCylindricalPanorama cylindricalPanorama = new PLCylindricalPanorama();
-        	cylindricalPanorama.setHeightCalculated(false);
-        	cylindricalPanorama.getCamera().setPitchRange(0.0f, 0.0f);
-        	cylindricalPanorama.setImage(gl, PLImage.imageWithBitmap(PLUtils.getBitmap(this, R.raw.pano_sphere), false));
-            panorama = cylindricalPanorama;*/
-        }
-        //Add a hotspot
-        panorama.addHotspot(new PLHotspot((kHotspotIdMin + Math.abs(random.nextInt()) % ((kHotspotIdMax + 1) - kHotspotIdMin)), PLImage.imageWithBitmap(PLUtils.getBitmap(this, R.raw.hotspot), false), 0.0f, 0.0f, 0.08f, 0.08f));
-        //Load panorama
-        this.reset();
-        this.setPanorama(panorama);
-        //Unlock panoramic view
-        this.setBlocked(false);
-    }
 
-    private void loadPanoramaFromJSON(int index)
-    {
-    	PLILoader loader = null;
-    	if(index == 0)
-    		loader = new PLJSONLoader(this, "res://raw/json_spherical");
-    	else if(index == 1)
-    		loader = new PLJSONLoader(this, "res://raw/json_spherical2");
-    	else if(index == 2)
-    		loader = new PLJSONLoader(this, "res://raw/json_cubic");
-    	else if(index == 3)
-    		loader = new PLJSONLoader(this, "res://raw/json_cylindrical");
-    	this.load(loader);
-    }
+	/**
+	 * 获取全景图信息
+	 */
+	private void getPanoDetail() {
+		String configStr = "";
+		String fileName = "/" + project_id + "/" + pano_id + "/" + "pano.cfg";
+		Integer type = 3;
+		String id = pano_id;
+		IoUtil ioutil = new IoUtil();
+		try {
+			configStr = ioutil.ReadStringFromSD(fileName, type, id);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		try {
+			panoInfo = new JSONObject(configStr).getJSONObject("pano");
+		} catch (JSONException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	private String GetFacePath(Integer face) {
+		String path = "";
+		switch (face) {
+		case 1:
+			path = "/" + project_id + "/" + pano_id + "/s_f.jpg";
+			break;
+		case 2:
+			path = "/" + project_id + "/" + pano_id + "/s_b.jpg";
+			break;
+		case 3:
+			path = "/" + project_id + "/" + pano_id + "/s_l.jpg";
+			break;
+		case 4:
+			path = "/" + project_id + "/" + pano_id + "/s_r.jpg";
+			break;
+		case 5:
+			path = "/" + project_id + "/" + pano_id + "/s_u.jpg";
+			break;
+		case 6:
+			path = "/" + project_id + "/" + pano_id + "/s_d.jpg";
+			break;
+		}
+		;
+
+		return path;
+	}
+
+	private void getPanoFace() {
+		
+	}
+
+	@Override
+	protected void onDestroy() {
+		Log.i(LOG_TAG, "Destroyed");
+
+		if (cubicPano != null) {
+			cubicPano.getFace(TextureFaces.front).recycle();
+			cubicPano.getFace(TextureFaces.back).recycle();
+			cubicPano.getFace(TextureFaces.top).recycle();
+			cubicPano.getFace(TextureFaces.bottom).recycle();
+			cubicPano.getFace(TextureFaces.left).recycle();
+			cubicPano.getFace(TextureFaces.right).recycle();
+			cubicPano = null;
+			System.gc();
+		}
+
+		super.onDestroy();
+	}
+
+	private void setupOpenGLView() {
+		Assert.assertTrue(cubicPano != null);
+		glView = new PanodroidGLView(this, cubicPano);
+		setContentView(glView);
+	}
+	
+	
+	
+	public class LoadFaceAsyncTask extends AsyncTask<Integer, Integer, String> {  
+		private Bitmap bfront = null, bback = null, bleft = null, bright = null, bup = null, bdown = null;
+		private ProgressDialog waitDialog = null;
+		@Override
+		protected void onPreExecute() {
+			waitDialog = new ProgressDialog(PanoViewActivity.this);
+	    	waitDialog.setMessage(getString(R.string.convertingPanoImage));
+	    	waitDialog.setCancelable(false);
+	    	waitDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+	    	/*waitDialog.setButton(ProgressDialog.BUTTON_NEGATIVE, getString(R.string.cancel), new DialogInterface.OnClickListener() {
+	    		public void onClick(DialogInterface dialog, int id) {
+	    			cancel(true);
+	    		}
+	    	});*/
+	    	waitDialog.setMax(6);
+	    	waitDialog.show();
+		} 
+	    /**  
+	     * 这里的Integer参数对应AsyncTask中的第一个参数   
+	     * 这里的String返回值对应AsyncTask的第三个参数  
+	     * 该方法并不运行在UI线程当中，主要用于异步操作，所有在该方法中不能对UI当中的空间进行设置和修改  
+	     * 但是可以调用publishProgress方法触发onProgressUpdate对UI进行操作  
+	     */  
+	    @Override  
+	    protected String doInBackground(Integer... params) {  
+	    	String status = "ok";
+	    	String front_url = "", back_url = "", left_url = "", right_url = "", up_url = "", down_url = "";
+			try {
+				front_url = panoInfo.getString("s_f");
+				back_url = panoInfo.getString("s_b");
+				left_url = panoInfo.getString("s_l");
+				right_url = panoInfo.getString("s_r");
+				up_url = panoInfo.getString("s_u");
+				down_url = panoInfo.getString("s_d");
+				// JSONArray hotspotInfo = panoInfo.getJSONArray("hotspot");
+			} catch (JSONException e) {
+				throw new RuntimeException(e);
+			}
+
+			String front = GetFacePath(1);
+			String back = GetFacePath(2);
+			String left = GetFacePath(3);
+			String right = GetFacePath(4);
+			String up = GetFacePath(5);
+			String down = GetFacePath(6);
+	    	
+			IoUtil ioutil = new IoUtil();
+			try {
+				ImagesUtil imgutil = new ImagesUtil();
+				
+				bfront = ioutil.ReadPicFromSD(front, front_url);
+				publishProgress(1);
+				bfront = imgutil.translateScale(bfront);
+				
+				bback = ioutil.ReadPicFromSD(back, back_url);
+				bback = imgutil.translateScale(bback);
+				publishProgress(2);
+				
+				bleft = ioutil.ReadPicFromSD(left, left_url);
+				bleft = imgutil.translateScale(bleft);
+				publishProgress(3);
+				
+				bright = ioutil.ReadPicFromSD(right, right_url);
+				bright = imgutil.translateScale(bright);
+				publishProgress(4);
+
+				bup = ioutil.ReadPicFromSD(up, up_url);
+				bup = imgutil.translateScale(bup);
+				bup = imgutil.translateRotate(bup);
+				publishProgress(5);
+
+				bdown = ioutil.ReadPicFromSD(down, down_url);
+				bdown = imgutil.translateRotate(bdown);
+				publishProgress(6);
+				
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+	    	return status;
+	    }  
+
+	    /**  
+	     * 这里的String参数对应AsyncTask中的第三个参数（也就是接收doInBackground的返回值）  
+	     * 在doInBackground方法执行结束之后在运行，并且运行在UI线程当中 可以对UI空间进行设置  
+	     */  
+	    @Override  
+	    protected void onPostExecute(String result) {  
+	    	waitDialog.dismiss();
+	    	cubicPano = new CubicPanoNative(bfront, bback, bup, bdown, bleft,
+					bright);
+			setupOpenGLView();
+	    }  
+
+	    /**  
+	     * 这里的Intege参数对应AsyncTask中的第二个参数  
+	     * 在doInBackground方法当中，，每次调用publishProgress方法都会触发onProgressUpdate执行  
+	     * onProgressUpdate是在UI线程中执行，所有可以对UI空间进行操作  
+	     */  
+	    @Override  
+	    protected void onProgressUpdate(Integer... progress) {  
+	    	int p = progress[0];
+			waitDialog.setProgress(p);
+	    }  
+
+	}  
 }

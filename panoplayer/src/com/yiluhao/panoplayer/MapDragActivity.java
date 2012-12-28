@@ -34,7 +34,7 @@ public class MapDragActivity extends Activity implements OnGestureListener{
 	    param2.addRule(RelativeLayout.ALIGN_PARENT_TOP);
 
 		Bitmap imageMap = BitmapFactory
-				.decodeResource(getResources(), R.raw.beautiful);
+				.decodeResource(getResources(), R.raw.xx);
 
 		myView = new MapView(this, imageMap, display.widthPixels,
 				display.heightPixels);
@@ -45,9 +45,6 @@ public class MapDragActivity extends Activity implements OnGestureListener{
 		total.setGestureVisible(false);
 		total.setLayoutParams(param1);
 		total.addView(myView);
-		
-
-		
 		setContentView(total);
 	}
 
