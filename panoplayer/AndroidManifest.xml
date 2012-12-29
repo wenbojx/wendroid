@@ -26,8 +26,13 @@
         android:finishOnTaskLaunch="true"
         android:theme="@style/AppTheme" >
         <activity
-            android:name="com.yiluhao.panoplayer.WelcomeActivity"
+            android:name="com.yiluhao.panoplayer.MapTestActivity"
+            android:label="@string/app_name" >
             
+        </activity>
+        
+        <activity
+            android:name="com.yiluhao.panoplayer.WelcomeActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -35,9 +40,30 @@
             </intent-filter>
         </activity>
         <activity
+            android:name="com.yiluhao.panoplayer.ExitActivity"
+            android:label="@string/app_name" >
+        </activity>
+        <activity
+            android:name="com.yiluhao.panoplayer.MainTabActivity"
+            android:label="@string/app_name" >
+        </activity>
+        <activity
             android:name="com.yiluhao.panoplayer.MainActivity"
             android:label="@string/app_name" >
         </activity>
+        <activity
+            android:name="com.yiluhao.panoplayer.AboutActivity"
+            android:label="@string/app_name" >
+        </activity>
+        <activity
+            android:name="com.yiluhao.panoplayer.PanoTabActivity"
+            android:label="@string/app_name" >
+        </activity>
+        <activity
+            android:name="com.yiluhao.panoplayer.ProjectMapActivity"
+            android:label="@string/app_name" >
+        </activity>
+        
         <activity
             android:name="com.yiluhao.panoplayer.PanoMapActivity"
             android:label="@string/app_name" >

@@ -2,7 +2,6 @@ package com.yiluhao.panoplayer;
 
 import java.io.IOException;
 
-
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.openpanodroid.PanodroidGLView;
@@ -12,16 +11,18 @@ import org.openpanodroid.panoutils.android.CubicPanoNative.TextureFaces;
 import com.yiluhao.utils.ImagesUtil;
 import com.yiluhao.utils.IoUtil;
 
-import junit.framework.Assert;
-
 import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.MotionEvent;
+import android.view.View;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 
 public class PanoViewActivity extends Activity {
 
@@ -34,14 +35,15 @@ public class PanoViewActivity extends Activity {
 	private String pano_id = "";
 	private String project_id = "";
 	private JSONObject panoInfo = null;
-	
-	private ProgressDialog waitDialog = null;
+	private float mx;
+	private float my;
+	int  moveX=0, moveY=0;
 
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.pano_view);
+		//setContentView(R.layout.pano_view);
 
 		Intent intent = getIntent();
 		Bundle extras = intent.getExtras();
@@ -51,13 +53,23 @@ public class PanoViewActivity extends Activity {
 		}
 		Log.v("ids=", pano_id + "-" + project_id);
 		getPanoDetail();
-		//getPanoFace();
-		
 		LoadFaceAsyncTask asyncTask = new LoadFaceAsyncTask();  
         asyncTask.execute();
-		// setupOpenGLView();
+        
 	}
-
+	private void setupOpenGLView() {
+		glView = new PanodroidGLView(this, cubicPano);
+		setContentView(glView);
+		
+		/*View mapView = this.getLayoutInflater().inflate(R.layout.pano_map, null);
+		FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(  
+		        FrameLayout.LayoutParams.WRAP_CONTENT,  
+		        FrameLayout.LayoutParams.WRAP_CONTENT); 
+		params.bottomMargin = 0;
+		params.rightMargin = 0;
+		params.gravity = Gravity.BOTTOM | Gravity.RIGHT; 
+        this.addContentView(mapView, params);*/
+	}
 	/**
 	 * 获取全景图信息
 	 */
@@ -107,10 +119,6 @@ public class PanoViewActivity extends Activity {
 		return path;
 	}
 
-	private void getPanoFace() {
-		
-	}
-
 	@Override
 	protected void onDestroy() {
 		Log.i(LOG_TAG, "Destroyed");
@@ -129,21 +137,14 @@ public class PanoViewActivity extends Activity {
 		super.onDestroy();
 	}
 
-	private void setupOpenGLView() {
-		Assert.assertTrue(cubicPano != null);
-		glView = new PanodroidGLView(this, cubicPano);
-		setContentView(glView);
-	}
-	
-	
-	
+
 	public class LoadFaceAsyncTask extends AsyncTask<Integer, Integer, String> {  
 		private Bitmap bfront = null, bback = null, bleft = null, bright = null, bup = null, bdown = null;
 		private ProgressDialog waitDialog = null;
 		@Override
 		protected void onPreExecute() {
 			waitDialog = new ProgressDialog(PanoViewActivity.this);
-	    	waitDialog.setMessage(getString(R.string.convertingPanoImage));
+	    	waitDialog.setMessage(getString(R.string.loading_face));
 	    	waitDialog.setCancelable(false);
 	    	waitDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
 	    	/*waitDialog.setButton(ProgressDialog.BUTTON_NEGATIVE, getString(R.string.cancel), new DialogInterface.OnClickListener() {
@@ -188,8 +189,8 @@ public class PanoViewActivity extends Activity {
 				ImagesUtil imgutil = new ImagesUtil();
 				
 				bfront = ioutil.ReadPicFromSD(front, front_url);
-				publishProgress(1);
 				bfront = imgutil.translateScale(bfront);
+				publishProgress(1);
 				
 				bback = ioutil.ReadPicFromSD(back, back_url);
 				bback = imgutil.translateScale(bback);

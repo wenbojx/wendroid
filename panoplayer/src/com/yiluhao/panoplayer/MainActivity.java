@@ -41,6 +41,7 @@ public class MainActivity extends ListActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
 		setContentView(R.layout.main);
 		// 列表展示
 		adapter = new MyAdapter(this);
@@ -56,7 +57,7 @@ public class MainActivity extends ListActivity {
 
 	private void startPanoViewerActivity(String id) {
 		Log.i(LOG_TAG, "id" + id);
-		Intent intent = new Intent(this, PanoListActivity.class);
+		Intent intent = new Intent(this, PanoTabActivity.class);
 		
 		Bundle bundle = new Bundle();  
 		bundle.putString("id", id);  

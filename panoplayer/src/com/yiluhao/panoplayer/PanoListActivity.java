@@ -3,6 +3,7 @@ package com.yiluhao.panoplayer;
 import java.io.IOException;
 
 
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,14 +17,11 @@ import com.yiluhao.utils.IoUtil;
 import com.yiluhao.utils.IoUtil.ImageCallBack;
 
 import android.app.ListActivity;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -33,7 +31,6 @@ import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.AdapterView.OnItemClickListener;
 
@@ -41,8 +38,6 @@ public class PanoListActivity extends ListActivity {
 	private static final String LOG_TAG = MainActivity.class.getSimpleName();
 	private List<Map<String, Object>> mData;
 	private String project_id = "";
-	private ProgressBar progress;
-	private ProgressDialog dialog=null;
 	private MyAdapter adapter = null;
 	
 	private float mx;

@@ -7,6 +7,7 @@ import com.yiluhao.utils.IoUtil;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Window;
 import android.view.WindowManager;
@@ -21,11 +22,11 @@ public class WelcomeActivity extends Activity implements AnimationListener {
       
     @Override  
     protected void onCreate(Bundle savedInstanceState) {  
-    	
         super.onCreate(savedInstanceState);  
+		
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
 
         setContentView(R.layout.welcome);  
         imageView = (ImageView)findViewById(R.id.welcome_image_view);  
@@ -52,9 +53,10 @@ public class WelcomeActivity extends Activity implements AnimationListener {
     @Override  
     public void onAnimationEnd(Animation animation) {  
         //动画结束时结束欢迎界面并转到软件的主界面  
-        Intent intent = new Intent(this, MainActivity.class);  
-        startActivity(intent);  
-        this.finish();  
+        Intent intent = new Intent(this, MainTabActivity.class);  
+       // intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);  //注意本行的FLAG设置
+        startActivity(intent);
+        this.finish();
     }  
       
     @Override  

@@ -3,6 +3,7 @@ package com.yiluhao.panoplayer;
 
 import android.app.Activity;
 
+
 import android.gesture.GestureOverlayView;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -34,7 +35,7 @@ public class MapDragActivity extends Activity implements OnGestureListener{
 	    param2.addRule(RelativeLayout.ALIGN_PARENT_TOP);
 
 		Bitmap imageMap = BitmapFactory
-				.decodeResource(getResources(), R.raw.xx);
+				.decodeResource(getResources(), R.raw.panorama);
 
 		myView = new MapView(this, imageMap, display.widthPixels,
 				display.heightPixels);

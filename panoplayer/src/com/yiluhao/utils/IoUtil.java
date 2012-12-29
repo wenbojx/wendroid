@@ -45,17 +45,20 @@ public class IoUtil {
 	// 写文本数据
 	final public void WriteStringToSD(String fileName, String writestr)
 			throws IOException {
-		try {
-			AutoMkdir(fileName);
-			String path = ALBUM_PATH + fileName;
-			FileOutputStream fout = new FileOutputStream(path);
-			byte[] bytes = writestr.getBytes();
-			fout.write(bytes);
-			fout.close();
-		} catch (IOException e) {
-			Log.v("CONFIGURL", "write file ko");
-			e.printStackTrace();
+		if(writestr != ""){
+			try {
+				AutoMkdir(fileName);
+				String path = ALBUM_PATH + fileName;
+				FileOutputStream fout = new FileOutputStream(path);
+				byte[] bytes = writestr.getBytes();
+				fout.write(bytes);
+				fout.close();
+			} catch (IOException e) {
+				Log.v("CONFIGURL", "write file ko");
+				e.printStackTrace();
+			}
 		}
+		
 	}
 
 	// 读文本数据
