@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical">
+
+    <Button
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="I am textview 1"/>
+    <Button
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="I am textview 2"/>
+
+<RelativeLayout  xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical">
+
+        <ImageView  
+    android:layout_width="wrap_content"  
+    android:layout_height="400px"  
+    android:id="@+id/img"  
+    android:scaleType="center"  
+    android:background="#fff"  
+    android:src="@raw/pano_sphere1"  
+    />  
+    <Button
+        android:layout_width="200dip"
+        android:layout_height="50dip"
+        android:layout_above="@+id/img"
+        android:text="I am textview 3"/>
+</RelativeLayout >
+    <Button
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="I am textview 4"/>
+    <Button
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="I am textview 5"/>
+</LinearLayout>

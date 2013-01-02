@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 import org.apache.http.util.EncodingUtils;
 
@@ -20,6 +21,16 @@ import android.widget.ImageView;
 public class IoUtil {
 	private final static String ALBUM_PATH = Environment
 			.getExternalStorageDirectory() + "/yiluhao"; // Sd卡目录
+
+	public boolean file_exit(String fileName) {
+		boolean exit = false;
+		String path = ALBUM_PATH + fileName;
+		File file = new File(path);
+		if (file.exists()) {
+			exit = true;
+		}
+		return exit;
+	}
 
 	/**
 	 * 自动创建不存在的目录
@@ -45,7 +56,7 @@ public class IoUtil {
 	// 写文本数据
 	final public void WriteStringToSD(String fileName, String writestr)
 			throws IOException {
-		if(writestr != ""){
+		if (writestr != "") {
 			try {
 				AutoMkdir(fileName);
 				String path = ALBUM_PATH + fileName;
@@ -58,7 +69,7 @@ public class IoUtil {
 				e.printStackTrace();
 			}
 		}
-		
+
 	}
 
 	// 读文本数据
@@ -66,7 +77,7 @@ public class IoUtil {
 	 * @param fileName
 	 *            文件名
 	 * @param type
-	 *            类型1项目列表 2全景列表 3 全景信息
+	 *            类型1项目列表 2全景列表 3 全景信息 4地图
 	 * @return
 	 * @throws IOException
 	 */
@@ -95,6 +106,27 @@ public class IoUtil {
 			e.printStackTrace();
 		}
 		return content;
+	}
+
+	/**
+	 * 读取文件地址
+	 */
+	public String GetFilePath(String fileName) {
+		String path = ALBUM_PATH + fileName;
+		return path;
+	}
+
+	/**
+	 * 读取文件String
+	 */
+	public InputStream GetFileStream(String path) {
+		InputStream inStream = null;
+		try {
+			inStream = new FileInputStream(path);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return inStream;
 	}
 
 	// 写图片数据
@@ -127,7 +159,60 @@ public class IoUtil {
 		return flag;
 	}
 
-	// 读图片文件
+	/**
+	 * 读取地图
+	 */
+	public void ReadMapFromSDThread(final String fileName,
+			final String urlPath, final MapCallBack MapCallBack)
+			throws IOException {
+		Bitmap bitmap = null;
+		String path = ALBUM_PATH + fileName;
+		File file = new File(path);
+		final Handler handler = new Handler() {
+			@Override
+			public void handleMessage(Message msg) {
+				MapCallBack.LoadMap((Bitmap) msg.obj);
+			}
+		};
+		
+		if (file.exists()) {// 若该文件存在
+			bitmap = BitmapFactory.decodeFile(path);
+			// bitmap.
+			Log.v("CONFIGURL", "pic get  from local" + path);
+			Message msg = handler.obtainMessage(0, bitmap);
+			handler.sendMessage(msg);
+			
+		} else {
+			
+			new Thread() {
+				@Override
+				public void run() {
+					Bitmap bitmap = null;
+					GetUrlInfo urlInfo = new GetUrlInfo();
+					bitmap = urlInfo.getWebPic(urlPath);
+
+					Message msg = handler.obtainMessage(0, bitmap);
+					handler.sendMessage(msg);
+
+					try {
+						AutoMkdir(fileName);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					try {
+						WritePicToSD(bitmap, fileName);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					Log.v("CONFIGURL", "pic get  from url" + urlPath);
+				}
+			}.start();
+		}
+	}
+
+	/**
+	 * 读图片文件
+	 */
 	public Bitmap ReadPicFromSDThread(final String fileName,
 			final String urlPath, final ImageView imageView,
 			final ImageCallBack imageCallBack) throws IOException {
@@ -214,5 +299,7 @@ public class IoUtil {
 	public interface ImageCallBack {
 		public void imageLoad(ImageView imageView, Bitmap bitmap);
 	}
-
+	public interface MapCallBack {
+		public void LoadMap(Bitmap bitmap);
+	}
 }

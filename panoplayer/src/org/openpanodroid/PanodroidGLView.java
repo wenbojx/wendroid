@@ -19,8 +19,10 @@
 
 package org.openpanodroid;
 
+import java.util.Date;
 import java.util.Stack;
-
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.openpanodroid.panoutils.android.CubicPanoNative;
 
@@ -29,6 +31,8 @@ import junit.framework.Assert;
 
 import android.app.Activity;
 import android.opengl.GLSurfaceView;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.view.MotionEvent;
 
@@ -39,6 +43,9 @@ public class PanodroidGLView extends GLSurfaceView {
 	private static final int REST_THRESHOLD = 5; // [pixel]
 	
 	private PanodroidVortexRenderer renderer;
+	private boolean AnimateFlag = true;
+	private long LastTime;
+	private float Ymove = 0f;
     
     private Stack<EventInfo> motionEvents;
     
@@ -54,16 +61,58 @@ public class PanodroidGLView extends GLSurfaceView {
     	}
     }
     
+    
+    private Handler mHandler = new Handler(){  
+        public void handleMessage(Message msg) {  
+            switch (msg.what) {  
+            case 1:  
+            	float distX = -0.5f;
+        		float distY = 0.0f;
+        		//Log.v("moeY", "aaa"+Ymove);
+        		if(Ymove>0){
+        			distY = -0.3f;
+        		}
+        		else if(Ymove<0){
+        			distY = 0.3f;
+        		}
+        		
+        		Ymove += distY;
+        		rotate(distX, distY);
+                break;  
+            }  
+        };  
+    };  
+    public void StartAnimate(){
+    	Timer timer = new Timer();
+        timer.schedule(new MyTask(), 8000, 10);
+    }
+    private class MyTask extends TimerTask {
+        public void run() {  
+            Message message = new Message();  
+            message.what = 1;  
+            Date currentDate = new Date();
+    		long currentTime = currentDate.getTime();
+            if(AnimateFlag && (currentTime-LastTime)>8000 ){
+            	mHandler.sendMessage(message); 
+            }
+        }     
+    }  
+    public void StopAnimate(){
+    	AnimateFlag = false;
+    }
+    public void ReAnimate(){
+    	AnimateFlag = true;
+    }
+    
 	@Override
 	public boolean onTouchEvent(final MotionEvent event) {
 		
 		switch (event.getAction()) {
     	case MotionEvent.ACTION_DOWN :
     		stopKineticRotation();
-    		
     		motionEvents = new Stack<EventInfo>();
     		motionEvents.push(new EventInfo(event.getX(), event.getY(), event.getEventTime()));
-   
+    		StopAnimate();
     		return true;
     	case MotionEvent.ACTION_MOVE :
     		Assert.assertTrue(motionEvents != null);
@@ -73,10 +122,11 @@ public class PanodroidGLView extends GLSurfaceView {
         		
         		float distX = event.getX()-lastEvent.x;
         		float distY = event.getY()-lastEvent.y;
-        		
+        		Ymove += distY;
         		rotate(distX, distY);
+        		
     		}
-    		
+    		Log.v("aaa", "aa--"+Ymove);
     		motionEvents.push(new EventInfo(event.getX(), event.getY(), event.getEventTime()));
     		
     		return true;
@@ -86,7 +136,11 @@ public class PanodroidGLView extends GLSurfaceView {
     		motionEvents.push(new EventInfo(event.getX(), event.getY(), event.getEventTime()));
     		
     		startKineticRotation();
-
+    		
+    		Date currentDate = new Date();
+    		LastTime = currentDate.getTime();
+    		ReAnimate();
+    		
     		return true;
     	case MotionEvent.ACTION_CANCEL :
     		motionEvents = null;
@@ -155,7 +209,8 @@ public class PanodroidGLView extends GLSurfaceView {
 		if (rotationSpeedLongitude == 0.0f && rotationSpeedLatitude == 0.0f) {
 			return;
 		}
-		
+		//Log.v("aaa", "aa"+Ymove);
+		Ymove += -1.0f*rotationSpeedLongitude;
 		renderer.startKineticRotation(-1.0f*rotationSpeedLatitude, -1.0f*rotationSpeedLongitude);
 	}
 	

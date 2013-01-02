@@ -3,9 +3,9 @@ package com.yiluhao.panoplayer;
 
 import android.app.TabActivity;
 
+
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.Window;
 import android.widget.RadioGroup;
 import android.widget.TabHost;
 import android.widget.RadioGroup.OnCheckedChangeListener;

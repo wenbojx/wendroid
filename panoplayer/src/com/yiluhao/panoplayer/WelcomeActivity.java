@@ -1,13 +1,8 @@
 package com.yiluhao.panoplayer;
 
-import java.io.IOException;
-
-import com.yiluhao.utils.IoUtil;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Window;
 import android.view.WindowManager;
@@ -39,7 +34,7 @@ public class WelcomeActivity extends Activity implements AnimationListener {
       
     @Override  
     public void onAnimationStart(Animation animation) {  
-		String fileName = "/projects.cfg";
+		/*String fileName = "/projects.cfg";
 		Integer type = 1;
 		String id = "0";
 		IoUtil ioutil = new IoUtil();
@@ -47,7 +42,7 @@ public class WelcomeActivity extends Activity implements AnimationListener {
 			String configStr = ioutil.ReadStringFromSD(fileName, type, id);
 		}catch (IOException e){
 			e.printStackTrace();
-		}
+		}*/
     }  
       
     @Override  

@@ -1,37 +1,20 @@
-/*
- * Copyright (C) 2011 Scott Lund
-
-
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-
 package com.yiluhao.panoplayer;
 
 import java.io.IOException;
+
+import java.io.InputStream;
 
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.content.res.XmlResourceParser;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -43,6 +26,8 @@ import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.util.Log;
+import android.util.Xml;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.ViewConfiguration;
@@ -139,6 +124,8 @@ public class ImageMap extends ImageView {
 	// view height and width
 	int mViewHeight=-1;
 	int mViewWidth=-1;
+	InputStream inputStream;
+	List hostspotsList = new ArrayList();
 
 	/*
 	 * containers for the image map areas
@@ -151,8 +138,6 @@ public class ImageMap extends ImageView {
 	
 	// list of open info bubbles
 	HashMap<Integer,Bubble> mBubbleMap = new HashMap<Integer,Bubble>();
-
-	
 	
 	/*
 	 * Constructors
@@ -165,13 +150,13 @@ public class ImageMap extends ImageView {
 	public ImageMap(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		init();
-		loadAttributes(attrs);		
+		//loadAttributes(attrs);		
 	}
 
 	public ImageMap(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
 		init();
-		loadAttributes(attrs);
+		//loadAttributes(attrs);
 	}
 	
 	/**
@@ -181,20 +166,32 @@ public class ImageMap extends ImageView {
 	private void loadAttributes(AttributeSet attrs) {
 		TypedArray a = getContext().obtainStyledAttributes(attrs,R.styleable.ImageMap);
 		String map = a.getString(R.styleable.ImageMap_map);
+		Log.v("map", map);
 		if (map != null) {
 			loadMap(map);
 		}
 	}
-	
+	public void SetMapHotspots(InputStream stream){
+		inputStream = stream;
+	}
+	public List GetCoords(){
+		return hostspotsList;
+	}
 	/**
 	 * parse the maps.xml resource and pull out the areas
 	 * @param map - the name of the map to load
 	 */
-	private void loadMap(String map) {
+	public void loadMap(String map) {
 		boolean loading = false;
+		
+		XmlPullParser xpp = Xml.newPullParser();  
 		try {
-	        XmlResourceParser xpp = getResources().getXml(R.xml.maps);
-	            
+	        //XmlResourceParser xpp = getResources().getXml(R.xml.maps);
+	        //XmlResourceParser xpp = GetMapHotspots();
+	        Log.v("content", inputStream.toString());
+	        
+	        xpp.setInput(inputStream, "utf-8");
+	        
 	        int eventType = xpp.getEventType();
 	        while (eventType != XmlPullParser.END_DOCUMENT) {
 	         if(eventType == XmlPullParser.START_DOCUMENT) {
@@ -218,7 +215,10 @@ public class ImageMap extends ImageView {
 		            	 String shape = xpp.getAttributeValue(null, "shape");
 		            	 String coords = xpp.getAttributeValue(null, "coords");
 		            	 String id = xpp.getAttributeValue(null, "id");
-		            	 
+		            	 //String link_id = xpp.getAttributeValue(null, "link");
+		            	 String link_id = "0";
+		            	 String[] ht = {link_id, coords};
+		            	 hostspotsList.add(ht);
 		            	 // as a name for this area, try to find any of these
 		            	 // attributes
 		            	 //  name attribute is custom to this impl (not standard in html area tag)
@@ -1325,6 +1325,7 @@ public class ImageMap extends ImageView {
 				int y = Integer.parseInt(v[i+1]);
 				xpoints.add(x);
 				ypoints.add(y);
+				Log.v("PolyArea", "arr--"+x+"-"+y);
 				top=(top==-1)?y:Math.min(top,y);
 				bottom=(bottom==-1)?y:Math.max(bottom,y);
 				left=(left==-1)?x:Math.min(left,x);
@@ -1578,7 +1579,7 @@ public class ImageMap extends ImageView {
 			// bubble was tapped, notify listeners
 			if (mCallbackList != null) {
 				for (OnImageMapClickedHandler h : mCallbackList) {
-					h.onBubbleClicked(_a.getId());						
+					h.onBubbleClicked(_a.getId(), _a.getValue("link"));						
 				}
 			}
 		}
@@ -1597,6 +1598,6 @@ public class ImageMap extends ImageView {
 		 * Info bubble associated with area 'id' has been tapped
 		 * @param id
 		 */
-		void onBubbleClicked(int id);
+		void onBubbleClicked(int id, String link);
 	}
 }

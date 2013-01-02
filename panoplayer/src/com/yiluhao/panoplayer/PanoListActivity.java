@@ -4,6 +4,7 @@ import java.io.IOException;
 
 
 
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,6 +33,7 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
 
 public class PanoListActivity extends ListActivity {
@@ -54,12 +56,15 @@ public class PanoListActivity extends ListActivity {
 		if (extras != null) {
 			project_id = extras.getString("id");
 		}
+		Log.v("PROJECT", project_id+"list");
 		// 列表展示
 		adapter = new MyAdapter(this);
 		DrawMap();
 		DrawListView();
 	}
-	
+	protected void onDestroy() {
+		super.onDestroy();
+	}
 	/**
 	 * 加载地图
 	 */
@@ -158,7 +163,10 @@ public class PanoListActivity extends ListActivity {
 		Log.v("Config", configStr);
 		List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
 		Map<String, Object> map = new HashMap<String, Object>();
-		
+		if(configStr == ""){
+			Toast.makeText(this, "获取数据错误请检查您的网络连接！", Toast.LENGTH_LONG).show();
+			return list;
+		}
 		try {
 			JSONObject jsonObject = new JSONObject(configStr);
 			JSONArray jsonArray = jsonObject.getJSONArray("panos");

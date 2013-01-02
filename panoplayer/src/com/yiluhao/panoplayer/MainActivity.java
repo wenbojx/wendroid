@@ -2,6 +2,7 @@ package com.yiluhao.panoplayer;
 
 import java.io.IOException;
 
+
 import java.util.ArrayList;
 
 import java.util.HashMap;
@@ -20,8 +21,6 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -32,6 +31,7 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class MainActivity extends ListActivity {
 	private static final String LOG_TAG = MainActivity.class.getSimpleName();
@@ -99,7 +99,10 @@ public class MainActivity extends ListActivity {
 		
 		List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
 		Map<String, Object> map = new HashMap<String, Object>();
-		
+		if(configStr == ""){
+			Toast.makeText(this, "获取数据错误请检查您的网络连接！", Toast.LENGTH_LONG).show();
+			return list;
+		}
 		try {
 			JSONObject jsonObject = new JSONObject(configStr);
 			JSONArray jsonArray = jsonObject.getJSONArray("project");
@@ -150,19 +153,16 @@ public class MainActivity extends ListActivity {
 
 		@Override
 		public int getCount() {
-			// TODO Auto-generated method stub
 			return mData.size();
 		}
 
 		@Override
 		public Object getItem(int arg0) {
-			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
 		public long getItemId(int arg0) {
-			// TODO Auto-generated method stub
 			return 0;
 		}
 

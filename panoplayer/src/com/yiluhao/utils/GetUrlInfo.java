@@ -17,9 +17,10 @@ import android.os.Environment;
 import android.util.Log;
 
 public class GetUrlInfo {
-	private String projects = "http://192.168.2.102/html/json.php";
-	private String panos = "http://192.168.2.102/html/json.php?panos=";
-	private String pano = "http://192.168.2.102/html/json.php?pano=";
+	private String projects = "http://192.168.2.102/ajax/m/ps";
+	private String panos = "http://192.168.2.102/ajax/m/pl/id/"; 
+	private String pano = "http://192.168.2.102/ajax/m/pv/id/";
+	private String pmap = "http://192.168.2.102/ajax/m/mp/id/";
 	private String panoPicPath = "http://beta1.yiluhao.com/html/Panorama.jpg";
 	
 	// 获取网络全景图片
@@ -59,7 +60,17 @@ public class GetUrlInfo {
 		{
 			content = GetPanoDetail(id);
 		}
+		else if(type== 4){
+			content = GetPanoMap(id);
+		}
 		return content;
+	}
+	/**
+	 * 获取项目地图
+	 */
+	public String GetPanoMap(String id){
+		pmap = pmap+id;
+		return FetchWebString(pmap);
 	}
 	/**
 	 * 获取项目列表
@@ -132,8 +143,10 @@ public class GetUrlInfo {
 			content = response.toString();
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
+			//Log.v("error1", "url_not_found");
 		} catch (IOException e) {
 			e.printStackTrace();
+			//Log.v("error2", "url_not_found");
 		}
 		return content;
 	}
