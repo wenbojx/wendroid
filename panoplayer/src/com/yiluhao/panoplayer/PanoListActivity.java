@@ -1,10 +1,6 @@
 package com.yiluhao.panoplayer;
 
 import java.io.IOException;
-
-
-
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,11 +17,9 @@ import android.app.ListActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -59,7 +53,7 @@ public class PanoListActivity extends ListActivity {
 		Log.v("PROJECT", project_id+"list");
 		// 列表展示
 		adapter = new MyAdapter(this);
-		DrawMap();
+		//DrawMap();
 		DrawListView();
 	}
 	protected void onDestroy() {
@@ -68,7 +62,7 @@ public class PanoListActivity extends ListActivity {
 	/**
 	 * 加载地图
 	 */
-	private void DrawMap(){
+	/*private void DrawMap(){
 		final ImageView switcherView = (ImageView) this.findViewById(R.id.map);
 		switcherView.setOnTouchListener(new View.OnTouchListener() {
 			public boolean onTouch(View arg0, MotionEvent event) {
@@ -108,7 +102,7 @@ public class PanoListActivity extends ListActivity {
 				return true;
 			}
 		});
-	}
+	}*/
 	private void DrawListView(){
 		mData = getPanosData();
         
@@ -164,7 +158,7 @@ public class PanoListActivity extends ListActivity {
 		List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
 		Map<String, Object> map = new HashMap<String, Object>();
 		if(configStr == ""){
-			Toast.makeText(this, "获取数据错误请检查您的网络连接！", Toast.LENGTH_LONG).show();
+			Toast.makeText(this, R.string.net_error, Toast.LENGTH_LONG).show();
 			return list;
 		}
 		try {
@@ -175,7 +169,7 @@ public class PanoListActivity extends ListActivity {
 				map = new HashMap<String, Object>();
 				map.put("id", jsonObject2.getString("id"));
 				map.put("title", jsonObject2.getString("title"));
-				map.put("info", jsonObject2.getString("info"));
+				map.put("created", jsonObject2.getString("created"));
 				//map.put("count", jsonObject2.getString("count"));
 				Log.v("PROJECT",
 						jsonObject2.getString("title")
@@ -275,10 +269,8 @@ public class PanoListActivity extends ListActivity {
 			}
 			
 			holder.title.setText((String) mData.get(position).get("title"));
-			holder.title.setTextColor(Color.BLACK);
-			String info = (String) mData.get(position).get("info");
-			holder.info.setText(info);
-			holder.info.setTextColor(Color.BLACK);
+			String created = getString(R.string.photo_time)+ (String) mData.get(position).get("created");
+			holder.info.setText(created);
 
 			return convertView;
 		}

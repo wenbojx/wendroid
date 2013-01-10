@@ -60,6 +60,10 @@
             android:label="@string/app_name" >
         </activity>
         <activity
+            android:name="com.yiluhao.panoplayer.PanoInfoActivity"
+            android:label="@string/app_name" >
+        </activity>
+        <activity
             android:name="com.yiluhao.panoplayer.ProjectMapActivity"
             android:label="@string/app_name" >
         </activity>

@@ -17,10 +17,10 @@ import android.os.Environment;
 import android.util.Log;
 
 public class GetUrlInfo {
-	private String projects = "http://192.168.2.102/ajax/m/ps";
-	private String panos = "http://192.168.2.102/ajax/m/pl/id/"; 
-	private String pano = "http://192.168.2.102/ajax/m/pv/id/";
-	private String pmap = "http://192.168.2.102/ajax/m/mp/id/";
+	private String projects = "http://beta1.yiluhao.com/ajax/m/ps";
+	private String panos = "http://beta1.yiluhao.com/ajax/m/pl/id/"; 
+	private String pano = "http://beta1.yiluhao.com/ajax/m/pv/id/";
+	private String pmap = "http://beta1.yiluhao.com/ajax/m/mp/id/";
 	private String panoPicPath = "http://beta1.yiluhao.com/html/Panorama.jpg";
 	
 	// 获取网络全景图片

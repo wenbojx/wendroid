@@ -183,7 +183,6 @@ public class IoUtil {
 			handler.sendMessage(msg);
 			
 		} else {
-			
 			new Thread() {
 				@Override
 				public void run() {

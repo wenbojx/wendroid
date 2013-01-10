@@ -34,10 +34,10 @@ public class MainTabActivity extends TabActivity implements OnCheckedChangeListe
 		tabhost.addTab(tabhost.newTabSpec("iAbout")
 	        	.setIndicator(getResources().getString(R.string.main_about), getResources().getDrawable(R.drawable.icon_2_n))
 	        	.setContent(iAbout));
-		iExit = new Intent(this, AboutActivity.class);
+		/*iExit = new Intent(this, AboutActivity.class);
 		tabhost.addTab(tabhost.newTabSpec("iExit")
 	        	.setIndicator(getResources().getString(R.string.main_exit), getResources().getDrawable(R.drawable.icon_2_n))
-	        	.setContent(iExit));
+	        	.setContent(iExit));*/
 		
     }
    
@@ -51,15 +51,15 @@ public class MainTabActivity extends TabActivity implements OnCheckedChangeListe
 		case R.id.main_about_tab:
 			this.tabhost.setCurrentTabByTag("iAbout");
 			break;
-		case R.id.main_exit_tab:
+		/*case R.id.main_exit_tab:
 			this.finish();
-			/*Intent intent = new Intent(this, WelcomeActivity.class);
+			Intent intent = new Intent(this, WelcomeActivity.class);
 			Bundle bundle = new Bundle();  
 			String exit = "1";
 			bundle.putString("exit", exit);  
 			intent.putExtras(bundle);  
-			startActivity(intent);*/
-			break;
+			startActivity(intent);
+			break;*/
 		}
 	}
 }

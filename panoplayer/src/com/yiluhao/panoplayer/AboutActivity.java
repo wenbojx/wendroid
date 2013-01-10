@@ -9,9 +9,9 @@ public class AboutActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		TextView textView=new TextView(this);
-		textView.setText("这是更多！");
-		setContentView(textView);
+		setContentView(R.layout.about);
+		TextView textView= (TextView) this.findViewById(R.id.about_info_detail);
+		textView.setText(R.string.about_info);
 	}
 	
 }

@@ -18,6 +18,7 @@ import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
@@ -432,14 +433,14 @@ public class ImageMap extends ImageView {
 	private void initDrawingTools() {
 		textPaint = new Paint();
 		textPaint.setColor(0xFF000000);
-		textPaint.setTextSize(30);
+		textPaint.setTextSize(26);
 		textPaint.setTypeface(Typeface.SERIF);
 		textPaint.setTextAlign(Paint.Align.CENTER);
 		textPaint.setAntiAlias(true);
 
 		textOutlinePaint = new Paint();
 		textOutlinePaint.setColor(0xFF000000);
-		textOutlinePaint.setTextSize(18);
+		textOutlinePaint.setTextSize(20);
 		textOutlinePaint.setTypeface(Typeface.SERIF);
 		textOutlinePaint.setTextAlign(Paint.Align.CENTER);
 		textOutlinePaint.setStyle(Paint.Style.STROKE);
@@ -1535,7 +1536,7 @@ public class ImageMap extends ImageView {
 				// Draw a shadow of the bubble
 				float l = _left + mScrollLeft + 4;
 				float t = _top + mScrollTop + 4;
-				canvas.drawRoundRect(new RectF(l,t,l+_w,t+_h), 20.0f, 20.0f, bubbleShadowPaint);
+				canvas.drawRoundRect(new RectF(l,t,l+_w+15,t+_h), 8.0f, 8.0f, bubbleShadowPaint);
 			    Path path = new Path();			    
 			    float ox=_x+ mScrollLeft+ 1;
 			    float oy=_y+mScrollTop+ 1;
@@ -1554,7 +1555,8 @@ public class ImageMap extends ImageView {
 			    // draw the bubble
 				l = _left + mScrollLeft;
 				t = _top + mScrollTop;
-				canvas.drawRoundRect(new RectF(l,t,l+_w,t+_h), 20.0f, 20.0f, bubblePaint);
+				canvas.drawRoundRect(new RectF(l,t,l+_w+15,t+_h), 8.0f, 8.0f, bubblePaint);
+
 			    path = new Path();			    
 			    ox=_x+ mScrollLeft;
 			    oy=_y+mScrollTop;
@@ -1569,6 +1571,20 @@ public class ImageMap extends ImageView {
 			    path.lineTo(ox, oy);
 			    path.close();
 			    canvas.drawPath(path, bubblePaint);
+			      
+			    //画三角
+			    Paint pointTo = new Paint();  
+			    pointTo.setStyle(Paint.Style.FILL);
+			    pointTo.setColor(Color.RED);
+			    pointTo.setAntiAlias(isClickable());
+			    float oxs = l+_w-5;
+			    float oys = t+10;
+			    path = new Path();	
+			    path.moveTo(oxs, oys);
+			    path.lineTo(oxs+15, oys+10);
+			    path.lineTo(oxs ,oys+20);	
+			    path.close();
+			    canvas.drawPath(path, pointTo);  
 			    
 			    // draw the message
 			    canvas.drawText(_text,l+(_w/2),t+_baseline-10,textPaint);

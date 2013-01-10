@@ -2,7 +2,6 @@ package com.yiluhao.panoplayer;
 
 import java.io.IOException;
 
-
 import java.util.ArrayList;
 
 import java.util.HashMap;
@@ -18,8 +17,8 @@ import com.yiluhao.utils.IoUtil.ImageCallBack;
 import android.app.ListActivity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -100,7 +99,7 @@ public class MainActivity extends ListActivity {
 		List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
 		Map<String, Object> map = new HashMap<String, Object>();
 		if(configStr == ""){
-			Toast.makeText(this, "获取数据错误请检查您的网络连接！", Toast.LENGTH_LONG).show();
+			Toast.makeText(this, R.string.net_error, Toast.LENGTH_LONG).show();
 			return list;
 		}
 		try {
@@ -111,7 +110,8 @@ public class MainActivity extends ListActivity {
 				map = new HashMap<String, Object>();
 				map.put("id", jsonObject2.getString("id"));
 				map.put("title", jsonObject2.getString("title"));
-				map.put("info", jsonObject2.getString("info"));
+				//map.put("info", jsonObject2.getString("info"));
+				map.put("created", jsonObject2.getString("created"));
 				map.put("count", jsonObject2.getString("count"));
 				Log.v("PROJECT",
 						jsonObject2.getString("title")
@@ -207,12 +207,11 @@ public class MainActivity extends ListActivity {
 				holder.thumb.setImageBitmap(thumb);
 			}
 			holder.title.setText((String) mData.get(position).get("title"));
-			holder.title.setTextColor(Color.BLACK);
-			String info = "含场景" + (String) mData.get(position).get("count")
-					+ "个," + (String) mData.get(position).get("info");
+			Resources resources = getResources();
+			String info = resources.getText(R.string.main_item_info1).toString() + (String) mData.get(position).get("count")
+					+ resources.getText(R.string.main_item_info2).toString() + (String) mData.get(position).get("created");
 			holder.info.setText(info);
-			holder.info.setTextColor(Color.BLACK);
-
+			//holder.info.lineSpacingMultiplier(1.5)
 			return convertView;
 		}
 

@@ -13,6 +13,7 @@ import com.yiluhao.utils.IoUtil;
 import com.yiluhao.utils.IoUtil.MapCallBack;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -31,6 +32,7 @@ public class ProjectMapActivity extends Activity {
 	List hostspotsList = null;
 	Bitmap mapPic = null;
 	InputStream stream = null;
+	private ProgressDialog progressDialog;  
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -79,16 +81,17 @@ public class ProjectMapActivity extends Activity {
 					throw new RuntimeException(e);
 				}
 			} else {
-				Toast.makeText(this, "获取数据错误请检查您的网络连接！", Toast.LENGTH_LONG)
+				Toast.makeText(this, R.string.net_error, Toast.LENGTH_LONG)
 						.show();
 			}
 		}
-
+		progressDialog = ProgressDialog.show(ProjectMapActivity.this, getString(R.string.loading), getString(R.string.loading_map), true, false);  
 		try {
 			ioutil.ReadMapFromSDThread(mapName, map_url,
 					new MapCallBack() {
 						@Override
 						public void LoadMap(Bitmap bitmap) {
+							progressDialog.dismiss();  
 							mapPic = bitmap;
 							DrawMap();
 						}

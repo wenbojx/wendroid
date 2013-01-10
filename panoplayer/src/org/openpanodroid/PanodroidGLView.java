@@ -20,6 +20,7 @@
 package org.openpanodroid;
 
 import java.util.Date;
+
 import java.util.Stack;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -46,6 +47,7 @@ public class PanodroidGLView extends GLSurfaceView {
 	private boolean AnimateFlag = true;
 	private long LastTime;
 	private float Ymove = 0f;
+	private int AnimateWaitTime = 5000;
     
     private Stack<EventInfo> motionEvents;
     
@@ -84,7 +86,7 @@ public class PanodroidGLView extends GLSurfaceView {
     };  
     public void StartAnimate(){
     	Timer timer = new Timer();
-        timer.schedule(new MyTask(), 8000, 10);
+        timer.schedule(new MyTask(), AnimateWaitTime, 10);
     }
     private class MyTask extends TimerTask {
         public void run() {  
@@ -92,7 +94,7 @@ public class PanodroidGLView extends GLSurfaceView {
             message.what = 1;  
             Date currentDate = new Date();
     		long currentTime = currentDate.getTime();
-            if(AnimateFlag && (currentTime-LastTime)>8000 ){
+            if(AnimateFlag && (currentTime-LastTime)>AnimateWaitTime ){
             	mHandler.sendMessage(message); 
             }
         }     

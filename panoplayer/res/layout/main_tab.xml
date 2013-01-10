@@ -39,12 +39,12 @@
     			android:drawableTop="@drawable/icon_2_n"
     			android:id="@+id/main_about_tab"
     			style="@style/main_tab_bottom"/>
-    		<RadioButton 
+ <!--    		<RadioButton 
     			android:layout_marginTop="2.0dip"
     			android:text="@string/main_exit"
     			android:drawableTop="@drawable/icon_2_n"
     			android:id="@+id/main_exit_tab"
-    			style="@style/main_tab_bottom"/>
+    			style="@style/main_tab_bottom"/> -->
     	</RadioGroup>
     </LinearLayout>
 </TabHost>
