@@ -30,13 +30,13 @@
     		<RadioButton 
     			android:layout_marginTop="2.0dip"
     			android:text="@string/main_home"
-    			android:drawableTop="@drawable/icon_1_n"
+    			android:drawableTop="@drawable/icon_main_home"
     			android:id="@+id/main_home_tab"
     			style="@style/main_tab_bottom"/>
     		<RadioButton 
     			android:layout_marginTop="2.0dip"
     			android:text="@string/main_about"
-    			android:drawableTop="@drawable/icon_2_n"
+    			android:drawableTop="@drawable/icon_main_about"
     			android:id="@+id/main_about_tab"
     			style="@style/main_tab_bottom"/>
  <!--    		<RadioButton 

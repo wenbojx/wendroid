@@ -9,5 +9,7 @@
             android:textColor="#333333"
             android:lineSpacingMultiplier="1.5"
             android:padding="20dip"
+             android:textAppearance="?android:attr/textAppearanceMedium"
             android:textSize="18sp" />
+
 </LinearLayout>

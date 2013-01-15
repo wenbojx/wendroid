@@ -11,10 +11,12 @@
     android:background="#fff"  
     android:src="@raw/panorama" 
     /> -->
-    
+
   <ListView android:id="@android:id/list"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:drawSelectorOnTop="false"/>
+
+  
 </LinearLayout>

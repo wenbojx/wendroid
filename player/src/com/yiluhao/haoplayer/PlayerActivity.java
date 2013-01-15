@@ -1,8 +1,6 @@
 package com.yiluhao.haoplayer;
 
 import java.util.Random;
-
-
 import javax.microedition.khronos.opengles.GL10;
 
 import com.panoramagl.PLIPanorama;
@@ -10,6 +8,7 @@ import com.panoramagl.PLIView;
 import com.panoramagl.PLImage;
 import com.panoramagl.PLSpherical2Panorama;
 import com.panoramagl.PLSphericalPanorama;
+import com.panoramagl.PLView;
 import com.panoramagl.PLViewEventListener;
 import com.panoramagl.hotspots.PLHotspot;
 import com.panoramagl.ios.structs.CGPoint;
@@ -23,7 +22,7 @@ import android.widget.Toast;
 import android.widget.ZoomControls;
 import android.view.View.OnClickListener;
 
-public class PlayerActivity extends PlayerView {
+public class PlayerActivity extends PLView {
 
 /**constants*/
 	

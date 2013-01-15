@@ -45,6 +45,13 @@ public class ProjectMapActivity extends Activity {
 		Log.v("PROJECT", project_id + "map");
 
 		// find the image map in the view
+/*		if(project_id != ""){
+			display();
+		}*/
+		display();
+		// mapPic = BitmapFactory.decodeResource(getResources(), R.raw.usamap);
+	}
+	private boolean display(){
 		String fileName = "/" + project_id + "/" + "map.xml";
 		Integer type = 4;
 		String id = project_id;
@@ -54,10 +61,12 @@ public class ProjectMapActivity extends Activity {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
+		
 		String path = ioutil.GetFilePath(fileName);
-
 		stream = ioutil.GetFileStream(path);
+		if(stream == null){
+			return false;
+		}
 		Log.v("Stream", stream.toString());
 
 		String mapName = "/" + project_id + "/map.jpg";
@@ -73,7 +82,7 @@ public class ProjectMapActivity extends Activity {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			if (configStr != "") {
+			if (configStr != "" && configStr !=null) {
 				try {
 					JSONObject jsonObject = new JSONObject(configStr);
 					map_url = jsonObject.getString("map");
@@ -85,21 +94,24 @@ public class ProjectMapActivity extends Activity {
 						.show();
 			}
 		}
+		
 		progressDialog = ProgressDialog.show(ProjectMapActivity.this, getString(R.string.loading), getString(R.string.loading_map), true, false);  
-		try {
-			ioutil.ReadMapFromSDThread(mapName, map_url,
-					new MapCallBack() {
-						@Override
-						public void LoadMap(Bitmap bitmap) {
-							progressDialog.dismiss();  
-							mapPic = bitmap;
-							DrawMap();
-						}
-					});
-		} catch (IOException e) {
-			e.printStackTrace();
+		if(map_url != "" && map_url != null){
+			try {
+				ioutil.ReadMapFromSDThread(mapName, map_url,
+						new MapCallBack() {
+							@Override
+							public void LoadMap(Bitmap bitmap) {
+								progressDialog.dismiss();  
+								mapPic = bitmap;
+									DrawMap();
+							}
+						});
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
-		// mapPic = BitmapFactory.decodeResource(getResources(), R.raw.usamap);
+		return true;
 	}
 	
 	@Override
@@ -111,7 +123,11 @@ public class ProjectMapActivity extends Activity {
 		}
 		super.onDestroy();
 	}
-	private void DrawMap(){
+	private boolean DrawMap(){
+		if(mapPic == null){
+			Toast.makeText(this, R.string.map_error, Toast.LENGTH_LONG).show();
+			return false;
+		}
 		setContentView(R.layout.project_map);
 		mImageMap = (ImageMap) findViewById(R.id.map);
 		mImageMap.SetMapHotspots(stream);
@@ -142,6 +158,7 @@ public class ProjectMapActivity extends Activity {
 						}
 					}
 				});
+		return true;
 	}
 
 	private void startPanoViewerActivity(String id) {

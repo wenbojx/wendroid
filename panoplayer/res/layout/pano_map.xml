@@ -10,7 +10,7 @@
     android:id="@+id/pano_map"  
     android:scaleType="center"  
     android:background="#fff"  
-    android:src="@raw/panorama" 
+    android:src="@raw/usamap" 
     />
 
 </LinearLayout>

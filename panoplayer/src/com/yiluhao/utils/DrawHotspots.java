@@ -14,6 +14,9 @@ public class DrawHotspots extends Activity{
 	private int hotspotHeight = 20;
 
 	public Bitmap Draw (Bitmap map, List list, Bitmap markImgG){
+		if(list.size()<1){
+			return map;
+		}
 		//Bitmap mapHotspot = map;
 		String[] ss =null;
 		//Bitmap markImg = BitmapFactory.decodeResource(getResources(), R.raw.);

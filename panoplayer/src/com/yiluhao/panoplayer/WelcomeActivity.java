@@ -1,8 +1,14 @@
 package com.yiluhao.panoplayer;
 
+import java.io.IOException;
+
+import com.yiluhao.utils.IoUtil;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Window;
 import android.view.WindowManager;
@@ -14,6 +20,8 @@ import android.widget.ImageView;
 public class WelcomeActivity extends Activity implements AnimationListener {  
     private ImageView  imageView = null;  
     private Animation alphaAnimation = null;  
+    private String configStr = "";
+    private final Handler mHandler = new Handler();  
       
     @Override  
     protected void onCreate(Bundle savedInstanceState) {  
@@ -31,22 +39,27 @@ public class WelcomeActivity extends Activity implements AnimationListener {
         imageView.setAnimation(alphaAnimation);  
         alphaAnimation.setAnimationListener(this);  //为动画设置监听  
     }  
-      
     @Override  
     public void onAnimationStart(Animation animation) {  
-		/*String fileName = "/projects.cfg";
-		Integer type = 1;
-		String id = "0";
-		IoUtil ioutil = new IoUtil();
-		try{
-			String configStr = ioutil.ReadStringFromSD(fileName, type, id);
-		}catch (IOException e){
-			e.printStackTrace();
-		}*/
+    	mHandler.postDelayed(new Runnable() {  
+            @Override  
+            public void run() {  
+            	String fileName = "/projects.cfg";
+        		Integer type = 1;
+        		String id = "0";
+        		IoUtil ioutil = new IoUtil();
+        		try{
+        			configStr = ioutil.ReadStringFromWeb(fileName, type, id);
+        		}catch (IOException e){
+        			e.printStackTrace();
+        		}
+            }  
+        }, 1000);  
     }  
       
     @Override  
     public void onAnimationEnd(Animation animation) {  
+    	
         //动画结束时结束欢迎界面并转到软件的主界面  
         Intent intent = new Intent(this, MainTabActivity.class);  
        // intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);  //注意本行的FLAG设置
@@ -56,7 +69,7 @@ public class WelcomeActivity extends Activity implements AnimationListener {
       
     @Override  
     public void onAnimationRepeat(Animation animation) {  
-          
+    	
     }  
       
     @Override  

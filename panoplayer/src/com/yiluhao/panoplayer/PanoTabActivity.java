@@ -57,7 +57,6 @@ public class PanoTabActivity extends TabActivity implements OnCheckedChangeListe
 		tabhost.addTab(tabhost.newTabSpec("iMap")
 	        	.setIndicator(getResources().getString(R.string.pano_map), getResources().getDrawable(R.drawable.icon_2_n))
 	        	.setContent(iMap));
-		
     }
    
 

@@ -8,7 +8,10 @@
     <string name="loading_face">正在加载素材...</string>
     <string name="main_home">首页</string>
     <string name="main_about">关于</string>
-    <string name="about_info">上海小脚丫工作室荣誉出品\n网址：www.yiluhao.com\nEmail：yiluhao@gmail.com\n更多精彩敬请期待...</string>
+    <string name="main_flash">刷新</string>
+    
+    
+    <string name="about_info">上海小牛工作室荣誉出品\n网址：www.yiluhao.com\nEmail：yiluhao@gmail.com\n更多精彩敬请期待...</string>
     <string name="main_exit">退出</string>
     <string name="pano_home">景点</string>
     <string name="pano_info">简介</string>
@@ -19,12 +22,13 @@
     <string name="photo_time">拍摄时间：</string>
     
     <string name="loading">加载中</string>
+    <string name="map_error">找不到地图</string>
     <string name="loading_map">正在加载地图，请稍等</string>
     
     <string name="main_news">信息</string>
     <string name="main_my_info">我的资料</string>
     <string name="menu_search">搜索</string>
-    <string name="more">更多</string>
+    <string name="more">查看更多...</string>
     <string name="net_error">获取数据错误请检查您的网络连接！</string>
     
     <string name="cancel">取消</string>

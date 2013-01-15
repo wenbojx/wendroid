@@ -21,17 +21,17 @@ public class GetUrlInfo {
 	private String panos = "http://beta1.yiluhao.com/ajax/m/pl/id/"; 
 	private String pano = "http://beta1.yiluhao.com/ajax/m/pv/id/";
 	private String pmap = "http://beta1.yiluhao.com/ajax/m/mp/id/";
-	private String panoPicPath = "http://beta1.yiluhao.com/html/Panorama.jpg";
+	//private String panoPicPath = "http://beta1.yiluhao.com/html/Panorama.jpg";
 	
-	// 获取网络全景图片
+/*	// 获取网络全景图片
 	public Bitmap GetPanoPic(String projec_id, String pano_id){
 		String urlPath = panoPicPath;
 		Bitmap bitmap = getWebPic(urlPath);
 		return bitmap;
 	}
-	/**
+	*//**
 	 * 获取网络全景图地址
-	 */
+	 *//*
 	public Uri GetPanoPath(String projec_id, String pano_id){
 		String path=  panoPicPath;
 		Uri panoUri = null;
@@ -42,7 +42,7 @@ public class GetUrlInfo {
 			Log.e("Invalid", "Invalid URL");
 		}
 		return panoUri;
-	}
+	}*/
     /**
      * 获取配置文件信息
      */

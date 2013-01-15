@@ -19,6 +19,8 @@ import android.util.Log;
 import android.widget.ImageView;
 
 public class IoUtil {
+	public boolean saveFile = true;
+	
 	private final static String ALBUM_PATH = Environment
 			.getExternalStorageDirectory() + "/yiluhao"; // Sd卡目录
 
@@ -107,6 +109,24 @@ public class IoUtil {
 		}
 		return content;
 	}
+	/**
+	 * 从网络获取配置文件并保存
+	 */
+	public String ReadStringFromWeb(String fileName, Integer type, String id)
+			throws IOException {
+		String content = "";
+		
+		try {
+				GetUrlInfo urlInfo = new GetUrlInfo();
+				content = urlInfo.GetConfigInfo(type, id);
+				Log.v("content", content+"-----------");
+				WriteStringToSD(fileName, content);
+				Log.v("CONFIGURL", "read from url");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return content;
+	}
 
 	/**
 	 * 读取文件地址
@@ -121,6 +141,9 @@ public class IoUtil {
 	 */
 	public InputStream GetFileStream(String path) {
 		InputStream inStream = null;
+		if(path == ""  || path == null){
+			return inStream;
+		}
 		try {
 			inStream = new FileInputStream(path);
 		} catch (Exception e) {
@@ -131,16 +154,19 @@ public class IoUtil {
 
 	// 写图片数据
 	public void WritePicToSD(Bitmap bm, String fileName) throws IOException {
-		try {
-			AutoMkdir(fileName);
-			File file = new File(ALBUM_PATH + fileName);
-			BufferedOutputStream bos = new BufferedOutputStream(
-					new FileOutputStream(file));
-			bm.compress(Bitmap.CompressFormat.JPEG, 80, bos);
-			bos.flush();
-			bos.close();
-		} catch (IOException e) {
-			e.printStackTrace();
+		Log.v("Filename", fileName);
+		if(bm !=null){
+			try {
+				AutoMkdir(fileName);
+				File file = new File(ALBUM_PATH + fileName);
+				BufferedOutputStream bos = new BufferedOutputStream(
+						new FileOutputStream(file));
+				bm.compress(Bitmap.CompressFormat.JPEG, 80, bos);
+				bos.flush();
+				bos.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -227,7 +253,7 @@ public class IoUtil {
 			final Handler handler = new Handler() {
 				@Override
 				public void handleMessage(Message msg) {
-					imageCallBack.imageLoad(imageView, (Bitmap) msg.obj);
+					imageCallBack.imageLoad(fileName, (Bitmap) msg.obj);
 				}
 			};
 			new Thread() {
@@ -243,14 +269,15 @@ public class IoUtil {
 					try {
 						AutoMkdir(fileName);
 					} catch (IOException e) {
-						Log.v("CONFIGURL", "mkdir ko");
 						e.printStackTrace();
 					}
-					try {
-						WritePicToSD(bitmap, fileName);
-					} catch (IOException e) {
-						Log.v("CONFIGURL", "write file ko");
-						e.printStackTrace();
+					if(bitmap !=null ){
+						try {
+							WritePicToSD(bitmap, fileName);
+						} catch (IOException e) {
+							//Log.v("CONFIGURL", "write file ko");
+							e.printStackTrace();
+						}
 					}
 					Log.v("CONFIGURL", "pic get  from url" + urlPath);
 				}
@@ -268,7 +295,7 @@ public class IoUtil {
 		if (file.exists()) {// 若该文件存在
 			bitmap = BitmapFactory.decodeFile(path);
 			// bitmap.
-			Log.v("CONFIGURL", "pic get  from local" + path);
+			//Log.v("CONFIGURL", "pic get  from local" + path);
 
 		} else {
 			GetUrlInfo urlInfo = new GetUrlInfo();
@@ -277,13 +304,13 @@ public class IoUtil {
 			try {
 				AutoMkdir(fileName);
 			} catch (IOException e) {
-				Log.v("CONFIGURL", "mkdir ko");
+				//Log.v("CONFIGURL", "mkdir ko");
 				e.printStackTrace();
 			}
 			try {
 				WritePicToSD(bitmap, fileName);
 			} catch (IOException e) {
-				Log.v("CONFIGURL", "write file ko");
+				//Log.v("CONFIGURL", "write file ko");
 				e.printStackTrace();
 			}
 			Log.v("CONFIGURL", "pic get  from url" + urlPath);
@@ -296,7 +323,7 @@ public class IoUtil {
 	 * 
 	 */
 	public interface ImageCallBack {
-		public void imageLoad(ImageView imageView, Bitmap bitmap);
+		public void imageLoad(String fileName, Bitmap bitmap);
 	}
 	public interface MapCallBack {
 		public void LoadMap(Bitmap bitmap);
