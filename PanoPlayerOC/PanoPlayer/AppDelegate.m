@@ -11,6 +11,7 @@
 #import "InfoViewController.h"
 #import "MapViewController.h"
 
+
 @implementation AppDelegate
 
 @synthesize window = _window;
@@ -23,6 +24,7 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+
     self.window = [[[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]]autorelease];
     
     //create nagtive and tabbar
@@ -41,6 +43,7 @@
     infoViewController.tabBarItem = [[UITabBarItem alloc] initWithTabBarSystemItem:UITabBarSystemItemDownloads tag:0];
     
     MapViewController *mapViewController = [[MapViewController alloc] init];
+    
     mapViewController.title = @"Map";
     mapViewController.tabBarItem = [[UITabBarItem alloc] initWithTabBarSystemItem:UITabBarSystemItemDownloads tag:0];  
     
