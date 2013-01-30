@@ -26,7 +26,27 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    // Do any additional setup after loading the view from its nib.
+    
+    iWebView = [[UIWebView alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+    [self.view addSubview:iWebView];
+    [iWebView setBackgroundColor:[UIColor clearColor]];
+    
+    UIView *header = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, 50)];
+    [header setBackgroundColor:[UIColor clearColor]];
+    
+    [self loadDocument:@"info.html"];
+    
+}
+//加载本地使用说明文件文件
+-(void)loadDocument:(NSString *)docName
+{
+    NSString *mainBundleDirectory=[[NSBundle mainBundle] bundlePath];
+    NSString *path=[mainBundleDirectory stringByAppendingPathComponent:docName];
+    
+    NSURL *url=[NSURL fileURLWithPath:path];
+    NSURLRequest *request=[NSURLRequest requestWithURL:url];
+    iWebView.scalesPageToFit=YES;
+    [iWebView loadRequest:request];
 }
 
 - (void)viewDidUnload

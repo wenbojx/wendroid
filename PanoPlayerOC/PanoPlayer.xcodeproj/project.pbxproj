@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		15425B8316B9073B00ACBC3C /* info.html in Resources */ = {isa = PBXBuildFile; fileRef = 15425B8216B9073B00ACBC3C /* info.html */; };
+		15425B8616B9074400ACBC3C /* style.css in Resources */ = {isa = PBXBuildFile; fileRef = 15425B8516B9074400ACBC3C /* style.css */; };
+		15425B9216B90EFE00ACBC3C /* MBProgressHUD.m in Sources */ = {isa = PBXBuildFile; fileRef = 15425B8F16B90EFD00ACBC3C /* MBProgressHUD.m */; };
 		155F7AE216B77139008B51EC /* camera.png in Resources */ = {isa = PBXBuildFile; fileRef = 155F7AD916B77139008B51EC /* camera.png */; };
 		155F7AE316B77139008B51EC /* camera1.png in Resources */ = {isa = PBXBuildFile; fileRef = 155F7ADA16B77139008B51EC /* camera1.png */; };
 		155F7AE416B77139008B51EC /* default.png in Resources */ = {isa = PBXBuildFile; fileRef = 155F7ADB16B77139008B51EC /* default.png */; };
@@ -117,6 +120,10 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		15425B8216B9073B00ACBC3C /* info.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; name = info.html; path = tools/info.html; sourceTree = SOURCE_ROOT; };
+		15425B8516B9074400ACBC3C /* style.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; name = style.css; path = tools/style.css; sourceTree = SOURCE_ROOT; };
+		15425B8E16B90EFD00ACBC3C /* MBProgressHUD.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MBProgressHUD.h; sourceTree = "<group>"; };
+		15425B8F16B90EFD00ACBC3C /* MBProgressHUD.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MBProgressHUD.m; sourceTree = "<group>"; };
 		155F7AD916B77139008B51EC /* camera.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = camera.png; path = img/camera.png; sourceTree = "<group>"; };
 		155F7ADA16B77139008B51EC /* camera1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = camera1.png; path = img/camera1.png; sourceTree = "<group>"; };
 		155F7ADB16B77139008B51EC /* default.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = default.png; path = img/default.png; sourceTree = "<group>"; };
@@ -362,6 +369,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		15425B8B16B90EFD00ACBC3C /* MBProgressHUD */ = {
+			isa = PBXGroup;
+			children = (
+				15425B8E16B90EFD00ACBC3C /* MBProgressHUD.h */,
+				15425B8F16B90EFD00ACBC3C /* MBProgressHUD.m */,
+			);
+			name = MBProgressHUD;
+			path = tools/MBProgressHUD;
+			sourceTree = SOURCE_ROOT;
+		};
 		C293037C16A93F3700D3530D /* PanoramaGL */ = {
 			isa = PBXGroup;
 			children = (
@@ -503,6 +520,7 @@
 		C2C77A6716ACF2DE00B7E8F6 /* Util */ = {
 			isa = PBXGroup;
 			children = (
+				15425B8B16B90EFD00ACBC3C /* MBProgressHUD */,
 				C293037C16A93F3700D3530D /* PanoramaGL */,
 				C2EC012F16AA963900413EFD /* ImageMapView */,
 				C2C8B85016B2665700E1666D /* ASIHTTPRequest */,
@@ -681,6 +699,7 @@
 		C2CA9FCC16A8E5760040A428 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				15425B8216B9073B00ACBC3C /* info.html */,
 				C2CAA00016A8F4000040A428 /* images */,
 				C2CA9FF216A8E6760040A428 /* icon */,
 				C2CA9FCD16A8E5760040A428 /* PanoPlayer-Info.plist */,
@@ -741,6 +760,7 @@
 		C2CAA00016A8F4000040A428 /* images */ = {
 			isa = PBXGroup;
 			children = (
+				15425B8516B9074400ACBC3C /* style.css */,
 				155F7B1616B7B679008B51EC /* map.gif */,
 			);
 			name = images;
@@ -825,6 +845,8 @@
 				155F7AF516B77260008B51EC /* MapViewController.xib in Resources */,
 				155F7AF616B77260008B51EC /* PlayerViewController.xib in Resources */,
 				155F7B1716B7B679008B51EC /* map.gif in Resources */,
+				15425B8316B9073B00ACBC3C /* info.html in Resources */,
+				15425B8616B9074400ACBC3C /* style.css in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -909,6 +931,7 @@
 				155F7B0616B772AE008B51EC /* InfoViewController.m in Sources */,
 				155F7B0716B772AE008B51EC /* MapViewController.m in Sources */,
 				155F7B0816B772AE008B51EC /* PlayerViewController.m in Sources */,
+				15425B9216B90EFE00ACBC3C /* MBProgressHUD.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

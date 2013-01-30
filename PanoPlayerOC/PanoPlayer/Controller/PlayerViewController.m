@@ -15,6 +15,7 @@
 //#import "SDImageCache.h"
 #import "ASIHTTPRequest.h"
 #import "ASIDownloadCache.h"
+#import "MBProgressHUD.h"
 //#import "ASINetworkQueue.h"
 
 @interface PlayerViewController ()
@@ -25,7 +26,7 @@
 @implementation PlayerViewController
 
 //@synthesize panoId;
-@synthesize faceNum;
+
 @synthesize hotspots;
 @synthesize faceSL;
 @synthesize faceSR;
@@ -33,6 +34,7 @@
 @synthesize faceSB;
 @synthesize faceSD;
 @synthesize faceSU;
+@synthesize loading;
 
 @synthesize imageProgressIndicator;
 
@@ -50,29 +52,16 @@
 
     plView = (PLView *)self.view;
     plView.delegate = self;
+    finishDownLoad = false;
+    faceSB = [[UIImage alloc] init];
+    faceSD = [[UIImage alloc] init];
+    faceSF = [[UIImage alloc] init];
+    faceSL = [[UIImage alloc] init];
+    faceSL = [[UIImage alloc] init];
+    faceSL = [[UIImage alloc] init];
     
     loading = [[[UILabel alloc] initWithFrame:CGRectZero] autorelease];
-    loading.text = @"(1/6)素材加载中...";
-    loading.backgroundColor = [UIColor clearColor];
-    loading.font = [UIFont fontWithName:@"Arial" size:12];
-    loading.textAlignment = UITextAlignmentCenter;
-    //loading.font
-    [self.view addSubview:loading];
-    
-    CGSize result = [[UIScreen mainScreen] bounds].size;
-    int height = result.height;
-    int width = result.width;
-    int progressWdith = width/2;
-    int x = (width - 110)/2;
-    int y = (height/2)-100;
-    NSLog(@"X-Y=%d-%d", x, y);
-    [loading setFrame:CGRectMake(x,y,110,20)];
-    
     imageProgressIndicator = [[[UIProgressView alloc] initWithFrame:CGRectZero] autorelease];
-    [self.view addSubview:imageProgressIndicator];
-    y = y+20;
-    x = (width - progressWdith)/2;
-    [imageProgressIndicator setFrame:CGRectMake(x,y,progressWdith,30)];
     
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(panoPlayerNotificationHandler:) name:@"panoId" object:nil];
@@ -85,22 +74,95 @@
                            toTarget:self
                          withObject:nil];
     */
-    [NSThread detachNewThreadSelector:@selector(startPlayer:) toTarget:self withObject:panoId];
-    //[self startPlayer:panoId];
-} 
+    
+    [self startThread:panoId];
+}
+-(void)startThread:(NSString *)panoId{
+    finishDownLoad = false;
+    [self drawWaiting];
+    [plView showProgressBar];
+    [NSThread detachNewThreadSelector:@selector(startDownload:) toTarget:self withObject:panoId];
+    [self checkThread];
+}
 
--(void)startPlayer:(NSString *)panoId{
+-(void)checkThread{
+    if(finishDownLoad){
+        [self displayPano];
+        return;
+    }
+    else{
+        [NSTimer scheduledTimerWithTimeInterval:0.2
+                                         target:self
+                                       selector:@selector(checkThread)
+                                       userInfo:nil repeats:NO];
+    }
+}
 
-    faceNum = 0;
+-(void)drawWaiting{
+    loading.hidden = NO;
+    imageProgressIndicator.hidden = NO;
+    loading.backgroundColor = [UIColor clearColor];
+    loading.font = [UIFont fontWithName:@"Arial" size:12];
+    loading.textAlignment = UITextAlignmentCenter;
+    //loading.font
+    [self.view addSubview:loading];
+    [self changeLoadState:1];
+    
+    CGSize result = [[UIScreen mainScreen] bounds].size;
+    int height = result.height;
+    int width = result.width;
+    int progressWdith = width/2;
+    int x = (width - 150)/2;
+    int y = (height/2)-100;
+    //NSLog(@"X-Y=%d-%d", x, y);
+    [loading setFrame:CGRectMake(x,y,150,20)];
+    
+    
+    [self.view addSubview:imageProgressIndicator];
+    y = y+20;
+    x = (width - progressWdith)/2;
+    [imageProgressIndicator setFrame:CGRectMake(x,y,progressWdith,30)];
+}
+
+//修改载入图片进程
+-(void)changeLoadState:(int) state{
+    NSString *msg = nil;
+    //CGRect frame = loading.frame;
+    //NSLog(@"STATE=%@", loading);
+    switch (state) {
+        case 1:
+            msg = @"素材加载中...";
+            break;
+        case 2:
+            msg = @"2素材加载中...";
+            break;
+        case 3:
+            msg = @"3素材加载中...";
+            break;
+        case 4:
+            msg = @"4素材加载中...";
+            break;
+        case 5:
+            msg = @"5素材加载中...";
+            break;
+        case 6:
+            msg = @"6素材加载中...";
+            break;
+        case 7:
+            msg = @"正在渲染图片,马上就好";
+            break;
+        default:
+            break;
+    }
+    loading.text = msg;
+}
+
+-(void)startDownload:(NSString *)panoId{
+
     hotspots = [[NSMutableArray alloc] init];
-
-    Boolean flag = false;
-    
-    
     if(panoId != nil){
         NSString *panoInfoUrl = [NSString stringWithFormat:@"http://beta1.yiluhao.com/ajax/m/pv/id/%@", panoId];
-        //NSLog(@"panoInfoUrl=%@", panoInfoUrl);
-        
+
         NSString *responseData = [self getPanoInfoFromUrl:panoInfoUrl];
         if(responseData !=nil){
             NSDictionary *resultsDictionary = [responseData objectFromJSONString];
@@ -141,15 +203,15 @@
             [request startSynchronous];
             NSError *error = [request error];
             if (!error) {
-                faceSF = [UIImage imageWithData:[request responseData]];
+                self.faceSF = [UIImage imageWithData:[request responseData]];
                 //NSLog(@"response%@", responseData);
             }
             else {
                 [self getWrong:@"获取素材失败"];
+                return;
             }
 
-            //loading.text = @"(2/6)素材加载中...";
-            [loading setText:@"(2/6)素材加载中..."];
+            [self changeLoadState:2];
             //[self.view addSubview:loading];
             NSString *s_r = [pano objectForKey:@"s_r"];
             request = [ASIHTTPRequest requestWithURL:[NSURL URLWithString:s_r]];
@@ -163,11 +225,11 @@
             [request startSynchronous];
             error = [request error];
             if (!error) {
-                faceSR = [UIImage imageWithData:[request responseData]];
-                //NSLog(@"response%@", responseData);
+                self.faceSR = [UIImage imageWithData:[request responseData]];
             }
             else {
                 [self getWrong:@"获取素材失败"];
+                return;
             }
             
             cached = [cache isCachedDataCurrentForRequest:request];
@@ -175,8 +237,7 @@
                 NSLog(@"cached3");
             }
             
-            loading.text = @"(3/6)素材加载中...";
-            loading.hidden = YES;
+            [self changeLoadState:3];
             NSString *s_b = [pano objectForKey:@"s_b"];
             request = [ASIHTTPRequest requestWithURL:[NSURL URLWithString:s_b]];
             [request setDownloadCache:cache];
@@ -189,11 +250,11 @@
             [request startSynchronous];
             error = [request error];
             if (!error) {
-                faceSB = [UIImage imageWithData:[request responseData]];
-                //NSLog(@"response%@", responseData);
+                self.faceSB = [UIImage imageWithData:[request responseData]];
             }
             else {
                 [self getWrong:@"获取素材失败"];
+                return;
             }
 
             cached = [cache isCachedDataCurrentForRequest:request];
@@ -201,7 +262,7 @@
                 NSLog(@"cached4");
             }
             
-            loading.text = @"(4/6)素材加载中...";
+            [self changeLoadState:4];
             NSString *s_l = [pano objectForKey:@"s_l"];
             request = [ASIHTTPRequest requestWithURL:[NSURL URLWithString:s_l]];
             [request setDownloadCache:cache];
@@ -212,11 +273,11 @@
             [request startSynchronous];
             error = [request error];
             if (!error) {
-                faceSL = [UIImage imageWithData:[request responseData]];
-                //NSLog(@"response%@", responseData);
+                self.faceSL = [UIImage imageWithData:[request responseData]];
             }
             else {
                 [self getWrong:@"获取素材失败"];
+                return;
             }
 
             cached = [cache isCachedDataCurrentForRequest:request];
@@ -224,7 +285,7 @@
                 NSLog(@"cached5");
             }
             
-            loading.text = @"(5/6)素材加载中...";
+            [self changeLoadState:5];
             NSString *s_u = [pano objectForKey:@"s_u"];
             request = [ASIHTTPRequest requestWithURL:[NSURL URLWithString:s_u]];
             [request setDownloadCache:cache];
@@ -235,17 +296,18 @@
             [request startSynchronous];
             error = [request error];
             if (!error) {
-                faceSU = [UIImage imageWithData:[request responseData]];
+                self.faceSU = [UIImage imageWithData:[request responseData]];
             }
             else {
                 [self getWrong:@"获取素材失败"];
+                return;
             }
             cached = [cache isCachedDataCurrentForRequest:request];
             if(cached){
                 NSLog(@"cached6");
             }
             
-            loading.text = @"(6/6)素材加载中...";
+            [self changeLoadState:6];
             NSString *s_d = [pano objectForKey:@"s_d"];
             request = [ASIHTTPRequest requestWithURL:[NSURL URLWithString:s_d]];
             [request setDownloadCache:cache];
@@ -256,51 +318,27 @@
             [request startSynchronous];
             error = [request error];
             if (!error) {
-                faceSD = [UIImage imageWithData:[request responseData]];
+                self.faceSD = [UIImage imageWithData:[request responseData]];
             }
             else {
                 [self getWrong:@"获取素材失败"];
+                return;
             }
             
             cached = [cache isCachedDataCurrentForRequest:request];
             if(cached){
                 NSLog(@"cached7");
             }
-            [self displayPano];
-            flag = true;
-
+            [self changeLoadState:7];
+            //[self displayPano];
+            finishDownLoad = true;
         }
     }
-    if(!flag){
-        [self getWrong:@"1加载数据出错"];
-    }
-    else {
-        
-    }
-}
-
- - ( void )requestFinished:( ASIHTTPRequest *)request
- {
-    NSString *face = [[request userInfo] objectForKey:@"face"];
-	UIImage *img = [UIImage imageWithData:[request responseData]];
-	if(img){
-        [self initPlayer:face faceImage:img];
-	}
-    else{
-        //[self getWrong:@"下载素材失败"];
-        NSLog(@"face=No");
+    if(!finishDownLoad){
+        [self getWrong:@"加载数据出错"];
+        return;
     }
 
-}
-
- - ( void )requestFailed:( ASIHTTPRequest *)request
- {
-    //NSString *face = [[request userInfo] objectForKey:@"face"];
-    //NSLog(@"face=%@", face);
-	if (!failed) {
-		[self getWrong:@"2获取素材失败，请检查您的网络设置"];
-		failed = YES;
-	}
 }
 
 -(void)addHotspot:(NSString *)hotspotId linkSceneId:(NSString *)linkSceneId tilt:(NSString *)tilt pan:(NSString *)pan{
@@ -314,42 +352,7 @@
     [hotspots addObject:hotspotBox];
     //NSLog(@"hotspots%@", hotspots);
 }
--(void)initPlayer:(NSString *)face faceImage:(UIImage *)faceImage{
-    //[self addFace:path face:face];
-    faceNum++;
 
-    if([face isEqualToString:@"s_f"]){
-        faceSF = faceImage;
-        //NSLog(@"faceSF=%@", faceSF);
-    }
-    else if([face isEqualToString:@"s_l"]) {
-        faceSL = faceImage;
-        //NSLog(@"faceSF=%@", faceSL);
-    }
-    else if([face isEqualToString:@"s_r"]) {
-        faceSR = faceImage;
-        //NSLog(@"faceSR=%@", faceSR);
-    }
-    else if([face isEqualToString:@"s_b"]) {
-        faceSB = faceImage;
-        //NSLog(@"faceSB=%@", faceSB);
-    }
-    else if([face isEqualToString:@"s_u"]) {
-        faceSU = faceImage;
-        //NSLog(@"faceSU=%@", faceSU);
-    }
-    else if([face isEqualToString:@"s_d"]) {
-        faceSD = faceImage;
-        //NSLog(@"faceSD=%@", faceSD);
-    }
-    
-    //return;
-    if(faceNum > 5){
-        
-        [self displayPano];
-    }
-     
-}
 
 -(void)displayPano{
     
@@ -391,7 +394,12 @@
         [panorama addHotspot:hotspot];
          
     }
+    //[self.view reloadInputViews];
+    
     [plView setPanorama:panorama];
+    [plView hideProgressBar];
+    //[imageProgressIndicator removeFromSuperview];
+    //[loading removeFromSuperview];
     imageProgressIndicator.hidden = YES;
     loading.hidden = YES;
 }
@@ -405,7 +413,7 @@
 
 -(NSString *)getPanoInfoFromUrl:(NSString *)url{
     if(url == nil){
-        [self getWrong:@"3参数错误"];
+        [self getWrong:@"参数错误"];
         return @"";
     }
     NSString *responseData = [[NSString alloc] init];
@@ -433,7 +441,7 @@
         //NSLog(@"response%@", responseData);
     }
     else {
-        [self getWrong:@"4获取数据失败"];
+        [self getWrong:@"获取数据失败"];
     }
     
     
@@ -444,8 +452,9 @@
 //Hotspot event
 -(void)view:(UIView<PLIView> *)pView didClickHotspot:(PLHotspot *)hotspot screenPoint:(CGPoint)point scene3DPoint:(PLPosition)position
 {
-    /*UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"Hotspot" message:[NSString stringWithFormat:@"You select the hotspot with ID %d", hotspot.identifier] delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];*/
-    NSString *clickHotspotId = [NSString stringWithFormat:@"%d", hotspot.identifier];
+    //[plView reset];
+    [plView showProgressBar];
+    NSString *clickHotspotId = [NSString stringWithFormat:@"%lld", hotspot.identifier];
     NSString *panoId = nil;
     for (int i=0; i<hotspots.count; i++) {
         NSMutableDictionary *hotspotDct = [hotspots objectAtIndex:i];
@@ -455,12 +464,35 @@
             panoId = linkScence;
         }
     }
-    NSLog(@"panoID=%@", panoId);
-
-    [self startPlayer:panoId];
+    
+    [self startThread:panoId];
 
 }
 
+/*
+-(void)displayWait{
+    HUD = [[MBProgressHUD alloc] initWithView:self.view];
+    [self.view addSubview:HUD];
+    
+    
+    UILabel *wait = [[[UILabel alloc] initWithFrame:CGRectZero] autorelease];
+    wait.backgroundColor = [UIColor clearColor];
+    wait.font = [UIFont fontWithName:@"Arial" size:12];
+    wait.textAlignment = UITextAlignmentCenter;
+    //loading.font
+    wait.text = @"加载中，请稍等";
+    [self.view addSubview:wait];
+    
+    CGSize result = [[UIScreen mainScreen] bounds].size;
+    int height = result.height;
+    int width = result.width;
+    int x = (width - 110)/2;
+    int y = (height/2)-100;
+    //NSLog(@"X-Y=%d-%d", x, y);
+    [wait setFrame:CGRectMake(x,y,110,20)];
+    
+}
+*/
 - (void)viewDidUnload
 {
     [super viewDidUnload];
