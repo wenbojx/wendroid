@@ -1,19 +1,15 @@
 package com.yiluhao.panoplayer;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
+import java.util.ArrayList;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.openpanodroid.panoutils.android.CubicPanoNative.TextureFaces;
 
 import com.yiluhao.utils.DrawHotspots;
 import com.yiluhao.utils.IoUtil;
-import com.yiluhao.utils.IoUtil.MapCallBack;
-
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -21,6 +17,7 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
+import com.loopj.android.http.*;
 
 /**
  * 图片浏览、缩放、拖动、自动居中
@@ -29,10 +26,12 @@ public class ProjectMapActivity extends Activity {
 
 	ImageMap mImageMap;
 	private String project_id = "";
-	List hostspotsList = null;
-	Bitmap mapPic = null;
-	InputStream stream = null;
+	private IoUtil ioUtil = null;
+	private String url = null;
+	private String mapUrl = null;
+	private String mapInfo = null;
 	private ProgressDialog progressDialog;  
+	private AsyncHttpClient client;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -42,112 +41,151 @@ public class ProjectMapActivity extends Activity {
 		if (extras != null) {
 			project_id = extras.getString("id");
 		}
-		Log.v("PROJECT", project_id + "map");
-
-		// find the image map in the view
-/*		if(project_id != ""){
-			display();
-		}*/
-		display();
-		// mapPic = BitmapFactory.decodeResource(getResources(), R.raw.usamap);
+		ioUtil = new IoUtil();
+		client = new AsyncHttpClient();
+		//progressDialog = ProgressDialog.show(ProjectMapActivity.this, getString(R.string.loading), getString(R.string.loading_map), true, false);
+		progressDialog = new ProgressDialog(ProjectMapActivity.this);
+		progressDialog.setMessage(getString(R.string.loading_map));
+		progressDialog.setCancelable(true);
+		//progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+		progressDialog.setButton(ProgressDialog.BUTTON_NEGATIVE,
+				getString(R.string.cancel),
+				new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int id) {
+						cancel();
+					}
+				});
+		progressDialog.show();
+		
+		LoadMapDatas();
 	}
-	private boolean display(){
-		String fileName = "/" + project_id + "/" + "map.xml";
-		Integer type = 4;
-		String id = project_id;
-		IoUtil ioutil = new IoUtil();
+	/**
+	 * 错误提示
+	 */
+	private void getWrong(String msg){
+		Toast.makeText(this, msg, Toast.LENGTH_LONG)
+		.show();
+	}
+	/**
+	 * 取消下载
+	 */
+	private void cancel(){
+		//cancelRequests
+		client.cancelRequests(ProjectMapActivity.this, true);
+	}
+	/**
+	 * 加载地图信息
+	 */
+	private void LoadMapDatas(){
+		url = "http://beta1.yiluhao.com/ajax/m/pm/id/"+project_id;
+		//Log.v("mapUrl = ", url);
+		
+		String response = null;
+		if( ioUtil.FileExists(project_id, url)){
+			Log.v("infoCached=", "cached");
+			response = ioUtil.ReadStringFromSD(project_id, url);
+			mapInfo = response;
+	        mapUrl = ExtractMapUrl(response);
+	        LoadMapPic();
+	        return ;
+		}
+		
+		//AsyncHttpClient client = new AsyncHttpClient();
+		client.get(url, new AsyncHttpResponseHandler() {
+		    @Override
+		    public void onSuccess(String response) {
+		    	if(response =="" || response == null){
+		    		return ;
+		    	}
+		    	ioUtil.SaveStringToSD(project_id, url, response);
+		    	mapInfo = response;
+		        mapUrl = ExtractMapUrl(response);
+		        LoadMapPic();
+		    }
+		    public void onFailure(Throwable error, String content){
+		    	getWrong("获取地图配置信息失败");
+		    }
+		});
+		
+		return ;
+	}
+	private void LoadMapPic(){
+		if(mapUrl == null || mapUrl == ""){
+			return ;
+		}
+		if(ioUtil.FileExists(project_id, mapUrl)){
+			Log.v("picCached=", "cached");
+			Bitmap mapPicture = ioUtil.ReadBitmapFromSD(project_id, mapUrl);
+			StartPaintMap(mapPicture);
+			return ;
+		}
+		//AsyncHttpClient client = new AsyncHttpClient();
+		String[] allowedContentTypes = new String[] { "image/png", "image/jpeg", "image/gif" };
+		client.get(mapUrl, new BinaryHttpResponseHandler(allowedContentTypes) {
+		    @Override
+		    public void onSuccess(byte[] fileData) {
+		    	if(fileData.length<1){
+		    		return ;
+		    	}
+		    	Bitmap mapPicture = BitmapFactory.decodeByteArray(fileData, 0, fileData.length, null);  
+		    	ioUtil.SavePicToSD(project_id, mapUrl, mapPicture);
+		    	StartPaintMap(mapPicture);
+		    }
+		    public void onFailure(Throwable error, String content){
+		    	getWrong("获取地图文件失败");
+		    }
+		});
+		
+		
+	}
+	/**
+	 * 解析地图图片信息
+	 */
+	private String ExtractMapUrl(String content){
+		String mapUrl = null;
+		if(content == "" || content ==null){
+			return mapUrl;
+		}
 		try {
-			ioutil.ReadStringFromSD(fileName, type, id);
-		} catch (IOException e) {
-			e.printStackTrace();
+			JSONObject jsonObject = new JSONObject(content);
+			mapUrl = jsonObject.getString("map");
+		} catch (JSONException e) {
+			throw new RuntimeException(e);
 		}
-		
-		String path = ioutil.GetFilePath(fileName);
-		stream = ioutil.GetFileStream(path);
-		if(stream == null){
-			return false;
-		}
-		Log.v("Stream", stream.toString());
-
-		String mapName = "/" + project_id + "/map.jpg";
-		String map_url = "";
-		
-		if (!ioutil.file_exit(mapName)) {
-			String configStr = "";
-			String project_file = "/" + project_id + "/" + "panos.cfg";
-			type = 2;
-			id = project_id;
-			try {
-				configStr = ioutil.ReadStringFromSD(project_file, type, id);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			if (configStr != "" && configStr !=null) {
-				try {
-					JSONObject jsonObject = new JSONObject(configStr);
-					map_url = jsonObject.getString("map");
-				} catch (JSONException e) {
-					throw new RuntimeException(e);
-				}
-			} else {
-				Toast.makeText(this, R.string.net_error, Toast.LENGTH_LONG)
-						.show();
-			}
-		}
-		
-		progressDialog = ProgressDialog.show(ProjectMapActivity.this, getString(R.string.loading), getString(R.string.loading_map), true, false);  
-		if(map_url != "" && map_url != null){
-			try {
-				ioutil.ReadMapFromSDThread(mapName, map_url,
-						new MapCallBack() {
-							@Override
-							public void LoadMap(Bitmap bitmap) {
-								progressDialog.dismiss();  
-								mapPic = bitmap;
-									DrawMap();
-							}
-						});
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		return true;
+		return mapUrl;
 	}
-	
-	@Override
-	protected void onDestroy() {
-		if (mapPic != null) {
-			mapPic.recycle();
-			mapPic = null;
-			System.gc();
+	/**
+	 * 绘制地图
+	 */
+	private void StartPaintMap(Bitmap mapPicture){
+		if(mapPicture == null ){
+			return ;
 		}
-		super.onDestroy();
-	}
-	private boolean DrawMap(){
-		if(mapPic == null){
-			Toast.makeText(this, R.string.map_error, Toast.LENGTH_LONG).show();
-			return false;
-		}
-		setContentView(R.layout.project_map);
+		ProjectMapActivity.this.setContentView(R.layout.project_map);
+		//setContentView(R.layout.project_map);
 		mImageMap = (ImageMap) findViewById(R.id.map);
-		mImageMap.SetMapHotspots(stream);
-		mImageMap.loadMap("map");
-		hostspotsList = mImageMap.GetCoords();
+		//mImageMap.SetMapHotspots(stream);
+		if(mapInfo == null || mapInfo == ""){
+			return ;
+		}
+
+		mImageMap.loadMap(mapInfo);
+		
+		ArrayList hostspotsList = mImageMap.GetCoords();
 		DrawHotspots newMap = new DrawHotspots();
 		Bitmap markImgG = BitmapFactory.decodeResource(getResources(),
 				R.raw.marker_green);
-		mapPic = newMap.Draw(mapPic, hostspotsList, markImgG);
+		mapPicture = newMap.Draw(mapPicture, hostspotsList, markImgG);
 		markImgG.recycle();
 		System.gc();
-		
-		mImageMap.setImageBitmap(mapPic);
+
+		mImageMap.setImageBitmap(mapPicture);
 		
 		// add a click handler to react when areas are tapped
-		mImageMap
-				.addOnImageMapClickedHandler(new ImageMap.OnImageMapClickedHandler() {
+		mImageMap.addOnImageMapClickedHandler(new ImageMap.OnImageMapClickedHandler() {
 					@Override
 					public void onImageMapClicked(int id) {
-						Log.v("Click_id", " : -------"+id);
+						//Log.v("Click_id", " : -------"+id);
 						mImageMap.showBubble(id);
 					}
 
@@ -158,11 +196,12 @@ public class ProjectMapActivity extends Activity {
 						}
 					}
 				});
-		return true;
+		progressDialog.dismiss();
+				
 	}
-
+	
 	private void startPanoViewerActivity(String id) {
-		Intent intent = new Intent(this, PanoViewActivity.class);
+		Intent intent = new Intent(this, PanoPlayerActivity.class);
 
 		Bundle bundle = new Bundle();
 		bundle.putString("pano_id", id);
@@ -171,5 +210,5 @@ public class ProjectMapActivity extends Activity {
 
 		startActivity(intent);
 	}
-
+	
 }

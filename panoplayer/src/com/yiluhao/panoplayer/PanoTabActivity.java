@@ -23,7 +23,7 @@ public class PanoTabActivity extends TabActivity implements OnCheckedChangeListe
         //requestWindowFeature(Window.FEATURE_NO_TITLE);
         Intent intent = getIntent();
 		Bundle extras = intent.getExtras();
-		String project_id = "0";
+		String project_id = "1";
 		if (extras != null) {
 			project_id = extras.getString("id");
 		}
@@ -63,11 +63,7 @@ public class PanoTabActivity extends TabActivity implements OnCheckedChangeListe
 	@Override
 	public void onCheckedChanged(RadioGroup group, int checkedId) {
 		switch(checkedId){
-		case R.id.main_home_tab:
-			//this.tabhost.setCurrentTabByTag("iHome");
-			Intent intent = new Intent(this, MainTabActivity.class);  
-	        startActivity(intent);
-			break;
+
 		case R.id.pano_home_tab:
 			this.tabhost.setCurrentTabByTag("iHome");
 			break;

@@ -6,6 +6,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigInteger;
+import java.security.MessageDigest;
 
 import org.apache.http.util.EncodingUtils;
 
@@ -20,20 +22,157 @@ import android.widget.ImageView;
 
 public class IoUtil {
 	public boolean saveFile = true;
-	
+
 	private final static String ALBUM_PATH = Environment
 			.getExternalStorageDirectory() + "/yiluhao"; // Sd卡目录
 
-	public boolean file_exit(String fileName) {
-		boolean exit = false;
-		String path = ALBUM_PATH + fileName;
-		File file = new File(path);
-		if (file.exists()) {
-			exit = true;
-		}
-		return exit;
+	/**
+	 * 获取文件地址
+	 */
+	private String GetFilePath(String folder, String fileName) {
+		fileName = Md5Url(fileName);
+		return ALBUM_PATH + "/" + folder + "/" + fileName;
 	}
 
+	/**
+	 * 判断文件是否存在
+	 * 
+	 * @return
+	 */
+	public boolean FileExists(String folder, String fileName) {
+		boolean flag = false;
+		String file = GetFilePath(folder, fileName);
+		File fileObj = new File(file);
+		if (fileObj.exists() && fileObj.length() > 0) {// 若该文件存在
+			flag = true;
+		}
+		return flag;
+	}
+
+	/**
+	 * 获取文件URL md5加密值
+	 */
+	public String Md5Url(String url) {
+		url = url + "yiluhao.com";
+		MessageDigest md = null;
+		String dstr = null;
+		try {
+			md = MessageDigest.getInstance("MD5");
+			md.update(url.getBytes());
+			dstr = new BigInteger(1, md.digest()).toString(16);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return dstr;
+	}
+
+	/**
+	 * 自动创建不存在的目录
+	 */
+	private void AutoMakeDir(String folder) throws IOException {
+		File dirFile = new File(ALBUM_PATH);
+		if (!dirFile.exists()) {
+			dirFile.mkdir();
+		}
+		String path = ALBUM_PATH + "/" + folder;
+		dirFile = new File(path);
+		if (!dirFile.exists()) {
+			dirFile.mkdir();
+			Log.v("mkdir-", path);
+		}
+	}
+
+	// 写文本数据
+	final public boolean SaveStringToSD(String folder, String fileName,
+			String string) {
+		if (string == "" || string == null) {
+			return false;
+		}
+
+		try {
+			AutoMakeDir(folder);
+			String file = GetFilePath(folder, fileName);
+			File fileObj = new File(file);
+			FileOutputStream fout = new FileOutputStream(fileObj);
+			byte[] bytes = string.getBytes();
+			fout.write(bytes);
+			fout.close();
+		} catch (IOException e) {
+			Log.v("CONFIGURL", "save string faild");
+			e.printStackTrace();
+		}
+		return true;
+	}
+
+	// 写图片数据
+	final public boolean SavePicToSD(String folder, String fileName, Bitmap bm) {
+		//Log.v("Filename", fileName);
+		if (bm == null) {
+			return false;
+		}
+		try {
+			AutoMakeDir(folder);
+			String file = GetFilePath(folder, fileName);
+			File fileObj = new File(file);
+			BufferedOutputStream bos = new BufferedOutputStream(
+					new FileOutputStream(fileObj));
+			bm.compress(Bitmap.CompressFormat.JPEG, 80, bos);
+			bos.flush();
+			bos.close();
+		} catch (IOException e) {
+			Log.v("CONFIGURL", "save pic faild");
+			e.printStackTrace();
+		}
+		return true;
+	}
+
+	// 读文本数据
+	final public String ReadStringFromSD(String folder, String fileName) {
+		String content = "";
+		try {
+			String file = GetFilePath(folder, fileName);
+			FileInputStream fin = new FileInputStream(file);
+			int length = fin.available();
+			byte[] buffer = new byte[length];
+			fin.read(buffer);
+			content = EncodingUtils.getString(buffer, "UTF-8");
+			fin.close();
+		} catch (IOException e) {
+			Log.v("CONFIGURL", "read String faild");
+			e.printStackTrace();
+		}
+		return content;
+	}
+
+	// 读取图片
+	final public Bitmap ReadBitmapFromSD(String folder, String fileName) {
+		Bitmap picture = null;
+		String file = GetFilePath(folder, fileName);
+		picture = BitmapFactory.decodeFile(file);
+		return picture;
+	}
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	/**
 	 * 自动创建不存在的目录
 	 */
@@ -53,6 +192,16 @@ public class IoUtil {
 				Log.v("mkdir-", mkPath);
 			}
 		}
+	}
+
+	public boolean file_exit(String fileName) {
+		boolean exit = false;
+		String path = ALBUM_PATH + fileName;
+		File file = new File(path);
+		if (file.exists() && file.length() > 0) {
+			exit = true;
+		}
+		return exit;
 	}
 
 	// 写文本数据
@@ -109,19 +258,20 @@ public class IoUtil {
 		}
 		return content;
 	}
+
 	/**
 	 * 从网络获取配置文件并保存
 	 */
 	public String ReadStringFromWeb(String fileName, Integer type, String id)
 			throws IOException {
 		String content = "";
-		
+
 		try {
-				GetUrlInfo urlInfo = new GetUrlInfo();
-				content = urlInfo.GetConfigInfo(type, id);
-				Log.v("content", content+"-----------");
-				WriteStringToSD(fileName, content);
-				Log.v("CONFIGURL", "read from url");
+			GetUrlInfo urlInfo = new GetUrlInfo();
+			content = urlInfo.GetConfigInfo(type, id);
+			Log.v("content", content + "-----------");
+			WriteStringToSD(fileName, content);
+			Log.v("CONFIGURL", "read from url");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -141,7 +291,7 @@ public class IoUtil {
 	 */
 	public InputStream GetFileStream(String path) {
 		InputStream inStream = null;
-		if(path == ""  || path == null){
+		if (path == "" || path == null) {
 			return inStream;
 		}
 		try {
@@ -155,7 +305,7 @@ public class IoUtil {
 	// 写图片数据
 	public void WritePicToSD(Bitmap bm, String fileName) throws IOException {
 		Log.v("Filename", fileName);
-		if(bm !=null){
+		if (bm != null) {
 			try {
 				AutoMkdir(fileName);
 				File file = new File(ALBUM_PATH + fileName);
@@ -168,21 +318,6 @@ public class IoUtil {
 				e.printStackTrace();
 			}
 		}
-	}
-
-	/**
-	 * 判断文件是否存在
-	 * 
-	 * @return
-	 */
-	public boolean FileExists(String fileName) {
-		boolean flag = false;
-		String path = ALBUM_PATH + fileName;
-		File file = new File(path);
-		if (file.exists()) {// 若该文件存在
-			flag = true;
-		}
-		return flag;
 	}
 
 	/**
@@ -200,14 +335,14 @@ public class IoUtil {
 				MapCallBack.LoadMap((Bitmap) msg.obj);
 			}
 		};
-		
+
 		if (file.exists()) {// 若该文件存在
 			bitmap = BitmapFactory.decodeFile(path);
 			// bitmap.
 			Log.v("CONFIGURL", "pic get  from local" + path);
 			Message msg = handler.obtainMessage(0, bitmap);
 			handler.sendMessage(msg);
-			
+
 		} else {
 			new Thread() {
 				@Override
@@ -271,11 +406,11 @@ public class IoUtil {
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
-					if(bitmap !=null ){
+					if (bitmap != null) {
 						try {
 							WritePicToSD(bitmap, fileName);
 						} catch (IOException e) {
-							//Log.v("CONFIGURL", "write file ko");
+							// Log.v("CONFIGURL", "write file ko");
 							e.printStackTrace();
 						}
 					}
@@ -295,7 +430,7 @@ public class IoUtil {
 		if (file.exists()) {// 若该文件存在
 			bitmap = BitmapFactory.decodeFile(path);
 			// bitmap.
-			//Log.v("CONFIGURL", "pic get  from local" + path);
+			// Log.v("CONFIGURL", "pic get  from local" + path);
 
 		} else {
 			GetUrlInfo urlInfo = new GetUrlInfo();
@@ -304,13 +439,13 @@ public class IoUtil {
 			try {
 				AutoMkdir(fileName);
 			} catch (IOException e) {
-				//Log.v("CONFIGURL", "mkdir ko");
+				// Log.v("CONFIGURL", "mkdir ko");
 				e.printStackTrace();
 			}
 			try {
 				WritePicToSD(bitmap, fileName);
 			} catch (IOException e) {
-				//Log.v("CONFIGURL", "write file ko");
+				// Log.v("CONFIGURL", "write file ko");
 				e.printStackTrace();
 			}
 			Log.v("CONFIGURL", "pic get  from url" + urlPath);
@@ -325,6 +460,7 @@ public class IoUtil {
 	public interface ImageCallBack {
 		public void imageLoad(String fileName, Bitmap bitmap);
 	}
+
 	public interface MapCallBack {
 		public void LoadMap(Bitmap bitmap);
 	}

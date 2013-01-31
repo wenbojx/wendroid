@@ -30,17 +30,13 @@ public class DrawHotspots extends Activity{
 			
 			int positionLeft =   Integer.parseInt(a[0]) + hotspotWidth;
 			int positionTop =  Integer.parseInt(a[1]) + hotspotHeight;
-			Log.v("position", "left:"+positionLeft+" top:"+positionTop);
+			//Log.v("position", "left:"+positionLeft+" top:"+positionTop);
 			canvas.drawBitmap(markImgG, positionLeft, positionTop, null);
 		}
 		//存储新合成的图片
 		canvas.save(Canvas.ALL_SAVE_FLAG);  
 		canvas.restore();  
-		//canvas.restore(); 
-		//watermark.recycle();  
-       // watermark = null;  
-		
-        
+
 		return newb;
 	}
 }

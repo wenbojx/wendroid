@@ -59,10 +59,8 @@ public class WelcomeActivity extends Activity implements AnimationListener {
       
     @Override  
     public void onAnimationEnd(Animation animation) {  
-    	
         //动画结束时结束欢迎界面并转到软件的主界面  
-        Intent intent = new Intent(this, MainTabActivity.class);  
-       // intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);  //注意本行的FLAG设置
+        Intent intent = new Intent(this, PanoTabActivity.class);  
         startActivity(intent);
         this.finish();
     }  

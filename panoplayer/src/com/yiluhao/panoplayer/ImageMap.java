@@ -1,6 +1,6 @@
 package com.yiluhao.panoplayer;
 
-import java.io.IOException;
+//import java.io.IOException;
 
 import java.io.InputStream;
 
@@ -10,8 +10,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+//import org.xmlpull.v1.XmlPullParser;
+//import org.xmlpull.v1.XmlPullParserException;
 
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -28,7 +31,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.util.Xml;
+//import android.util.Xml;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.ViewConfiguration;
@@ -126,7 +129,7 @@ public class ImageMap extends ImageView {
 	int mViewHeight=-1;
 	int mViewWidth=-1;
 	InputStream inputStream;
-	List hostspotsList = new ArrayList();
+	ArrayList hostspotsList = new ArrayList();
 
 	/*
 	 * containers for the image map areas
@@ -167,98 +170,73 @@ public class ImageMap extends ImageView {
 	private void loadAttributes(AttributeSet attrs) {
 		TypedArray a = getContext().obtainStyledAttributes(attrs,R.styleable.ImageMap);
 		String map = a.getString(R.styleable.ImageMap_map);
-		Log.v("map", map);
+		//Log.v("map", map);
 		if (map != null) {
 			loadMap(map);
 		}
 	}
-	public void SetMapHotspots(InputStream stream){
-		inputStream = stream;
-	}
-	public List GetCoords(){
+
+	public ArrayList GetCoords(){
 		return hostspotsList;
 	}
 	/**
 	 * parse the maps.xml resource and pull out the areas
 	 * @param map - the name of the map to load
 	 */
-	public void loadMap(String map) {
-		boolean loading = false;
-		
-		XmlPullParser xpp = Xml.newPullParser();  
+	public void loadMap(String mapInfo) {
+		JSONArray coordsArray = null;
+		Area a=null;
 		try {
-	        //XmlResourceParser xpp = getResources().getXml(R.xml.maps);
-	        //XmlResourceParser xpp = GetMapHotspots();
-	        Log.v("content", inputStream.toString());
-	        
-	        xpp.setInput(inputStream, "utf-8");
-	        
-	        int eventType = xpp.getEventType();
-	        while (eventType != XmlPullParser.END_DOCUMENT) {
-	         if(eventType == XmlPullParser.START_DOCUMENT) {
-	             // Start document
-	        	 //  This is a useful branch for a debug log if
-	        	 //  parsing is not working
-	         } else if(eventType == XmlPullParser.START_TAG) {
-	             String tag = xpp.getName();
-	        	 
-	             if (tag.equalsIgnoreCase("map")) {
-	            	 String mapname = xpp.getAttributeValue(null, "name");
-	            	 if (mapname !=null) {
-	            		 if (mapname.equalsIgnoreCase(map)) {
-	            			 loading=true;
-	            		 }
-	            	 }
-	             }
-	             if (loading) {
-		             if (tag.equalsIgnoreCase("area")) {
-		            	 Area a=null;
-		            	 String shape = xpp.getAttributeValue(null, "shape");
-		            	 String coords = xpp.getAttributeValue(null, "coords");
-		            	 String id = xpp.getAttributeValue(null, "id");
-		            	 //String link_id = xpp.getAttributeValue(null, "link");
-		            	 String link_id = "0";
-		            	 String[] ht = {link_id, coords};
-		            	 hostspotsList.add(ht);
-		            	 // as a name for this area, try to find any of these
-		            	 // attributes
-		            	 //  name attribute is custom to this impl (not standard in html area tag)
-		            	 String name = xpp.getAttributeValue(null, "name");
-		            	 if (name == null) {
-		            		 name = xpp.getAttributeValue(null, "title");
-		            	 }
-		            	 if (name == null) {
-		            		 name = xpp.getAttributeValue(null, "alt");
-		            	 }
-		            	 
-		            	 if ((shape != null) && (coords != null)) {
-		            		 a = addShape(shape,name,coords,id);
-		            		 if (a != null) {
-		            			 // add all of the area tag attributes
-		            			 // so that they are available to the
-		            			 // implementation if needed (see getAreaAttribute)
-			            		 for (int i=0;i<xpp.getAttributeCount();i++) {
-				            		 String attrName = xpp.getAttributeName(i);
-				            		 String attrVal = xpp.getAttributeValue(null,attrName);
-				            		 a.addValue(attrName, attrVal);
-				            	 }
-		            		 }
-		            	 }		            	 		            	
-		             }
-	             }
-	         } else if(eventType == XmlPullParser.END_TAG) {
-	        	 String tag = xpp.getName();
-	        	 if (tag.equalsIgnoreCase("map")) {
-	        		 loading = false;
-	        	 }
-	         } 
-	         eventType = xpp.next();
-	        }        
-		} catch (XmlPullParserException xppe) {
-			// Having trouble loading? Log this exception
-		} catch (IOException ioe) {
-			// Having trouble loading? Log this exception
+			JSONObject jsonObject = new JSONObject(mapInfo);
+			coordsArray = jsonObject.getJSONArray("coords");
+			
+			for (int i = 0; i < coordsArray.length(); i++) {
+				JSONObject singleObject = (JSONObject) coordsArray.opt(i);
+				//String a = singleObject.getString("id");
+				String shape = "poly";
+           	 	String coords = singleObject.getString("coords");
+           	 	String id = "@+id/area"+i;
+           	 	String link_id = singleObject.getString("linkScene");
+	           	String keyId = "0";
+	        	String[] ht = {keyId, coords};
+	        	hostspotsList.add(ht);
+        	 
+           	 	String name = singleObject.getString("linkTitle");
+           	 	if ((shape != null) && (coords != null)) {
+           	 	//Log.v("aaaa==", shape+"|"+name+"|"+coords+"|"+id);
+        		a = addShape(shape,name,coords,id);
+        		 if (a != null) {
+        			 // add all of the area tag attributes
+        			 // so that they are available to the
+        			 // implementation if needed (see getAreaAttribute)
+        			 String attrName = "shape";
+            		 String attrVal = shape;
+            		 a.addValue(attrName, attrVal);
+            		 
+            		 attrName = "coords";
+            		 attrVal = coords;
+            		 a.addValue(attrName, attrVal);
+            		 
+            		 attrName = "id";
+            		 attrVal = id;
+            		 a.addValue(attrName, attrVal);
+            		 
+            		 attrName = "link_id";
+            		 attrVal = link_id;
+            		 a.addValue(attrName, attrVal);
+            		 
+            		 attrName = "name";
+            		 attrVal = name;
+            		 a.addValue(attrName, attrVal);
+            		 
+        		 }
+        	 }		           
+			}
+			
+		} catch (JSONException e) {
+			throw new RuntimeException(e);
 		}
+
 	}
 	
 	/**
@@ -1326,7 +1304,7 @@ public class ImageMap extends ImageView {
 				int y = Integer.parseInt(v[i+1]);
 				xpoints.add(x);
 				ypoints.add(y);
-				Log.v("PolyArea", "arr--"+x+"-"+y);
+				//Log.v("PolyArea", "arr--"+x+"-"+y);
 				top=(top==-1)?y:Math.min(top,y);
 				bottom=(bottom==-1)?y:Math.max(bottom,y);
 				left=(left==-1)?x:Math.min(left,x);
@@ -1595,7 +1573,7 @@ public class ImageMap extends ImageView {
 			// bubble was tapped, notify listeners
 			if (mCallbackList != null) {
 				for (OnImageMapClickedHandler h : mCallbackList) {
-					h.onBubbleClicked(_a.getId(), _a.getValue("link"));						
+					h.onBubbleClicked(_a.getId(), _a.getValue("link_id"));						
 				}
 			}
 		}

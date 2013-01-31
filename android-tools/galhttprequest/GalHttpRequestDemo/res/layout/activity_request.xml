@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+    <TextView
+        android:id="@+id/requestcontent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Request Content"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+    <EditText
+        android:id="@+id/textView"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:gravity="left|top"
+        android:layout_below="@+id/requestcontent"
+        android:inputType="textMultiLine" >
+    </EditText>
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_below="@+id/requestcontent"
+        android:scaleType="center"
+        android:src="@drawable/ic_launcher" />
+    
+</RelativeLayout>
