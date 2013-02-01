@@ -7,6 +7,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.security.MessageDigest;
 
 import org.apache.http.util.EncodingUtils;
@@ -22,7 +25,7 @@ import android.widget.ImageView;
 
 public class IoUtil {
 	public boolean saveFile = true;
-
+	public boolean projectList = false;//是否含项目列表的项目
 	private final static String ALBUM_PATH = Environment
 			.getExternalStorageDirectory() + "/yiluhao"; // Sd卡目录
 
@@ -31,9 +34,18 @@ public class IoUtil {
 	 */
 	private String GetFilePath(String folder, String fileName) {
 		fileName = Md5Url(fileName);
-		return ALBUM_PATH + "/" + folder + "/" + fileName;
+		String prefix = Md5FirstChar(fileName);
+		if(projectList){
+			return ALBUM_PATH + "/" + folder + "/" + prefix + "/" + fileName;
+		}
+		return ALBUM_PATH + "/" + prefix + "/" + fileName;
 	}
-
+	/**
+	 * 获取md5加密字符的第一个字符
+	 */
+	private String Md5FirstChar(String string){
+		return string.substring(string.length()-1, string.length());
+	}
 	/**
 	 * 判断文件是否存在
 	 * 
@@ -69,17 +81,53 @@ public class IoUtil {
 	/**
 	 * 自动创建不存在的目录
 	 */
-	private void AutoMakeDir(String folder) throws IOException {
+	private void AutoMakeDir(String folder, String fileName) throws IOException {
+		
 		File dirFile = new File(ALBUM_PATH);
 		if (!dirFile.exists()) {
 			dirFile.mkdir();
 		}
-		String path = ALBUM_PATH + "/" + folder;
+		fileName = Md5Url(fileName);
+		String prefix = Md5FirstChar(fileName);
+		String path = ALBUM_PATH;
+		if(projectList){
+			path += "/" + folder;
+			dirFile = new File(path);
+			if (!dirFile.exists()) {
+				dirFile.mkdir();
+				Log.v("mkdir-", path);
+			}
+		}
+		path += "/" + prefix;
 		dirFile = new File(path);
 		if (!dirFile.exists()) {
 			dirFile.mkdir();
 			Log.v("mkdir-", path);
 		}
+	}
+	/**
+	 * 删除目录
+	 */
+	public boolean DelFolder(String folder){
+		if(folder ==null || folder == ""){
+			return false;
+		}
+		String path = ALBUM_PATH + "/" + folder;
+		
+		return true;
+	}
+	/**
+	 * 删除文件
+	 */
+	public boolean DelFile(String folder, String fileName){
+		String file = GetFilePath(folder, fileName);
+		File dirFile = new File(file);
+		if(!dirFile.exists()){
+			return false;
+		}
+		dirFile.delete();
+		Log.v("Delete File = ", fileName);
+		return true;
 	}
 
 	// 写文本数据
@@ -90,7 +138,7 @@ public class IoUtil {
 		}
 
 		try {
-			AutoMakeDir(folder);
+			AutoMakeDir(folder, fileName);
 			String file = GetFilePath(folder, fileName);
 			File fileObj = new File(file);
 			FileOutputStream fout = new FileOutputStream(fileObj);
@@ -111,7 +159,7 @@ public class IoUtil {
 			return false;
 		}
 		try {
-			AutoMakeDir(folder);
+			AutoMakeDir(folder, fileName);
 			String file = GetFilePath(folder, fileName);
 			File fileObj = new File(file);
 			BufferedOutputStream bos = new BufferedOutputStream(
@@ -152,7 +200,35 @@ public class IoUtil {
 		return picture;
 	}
 
-	
+	// 读图片文件
+	public Bitmap GetFacePic(String folder, String fileName) {
+		Bitmap bitmap = null;
+		if (FileExists(folder, fileName)) {// 若该文件存在
+			bitmap = ReadBitmapFromSD(folder, fileName);
+			Log.v("cached", "pic");
+		} else {
+			try {
+				URL url = new URL(fileName);
+				HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+				InputStream stream = conn.getInputStream();
+				bitmap = BitmapFactory.decodeStream(stream);
+				stream.close();
+				if(bitmap != null && bitmap.getHeight()>0){
+					SavePicToSD(folder, fileName, bitmap);
+				}
+				else{
+					return null;
+				}
+				
+			} catch (MalformedURLException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			Log.v("CONFIGURL", "pic get  from url"+fileName );
+		}
+		return bitmap;
+	}
 	
 	
 	

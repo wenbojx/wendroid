@@ -41,9 +41,11 @@ public class WelcomeActivity extends Activity implements AnimationListener {
     }  
     @Override  
     public void onAnimationStart(Animation animation) {  
+    	/*
     	mHandler.postDelayed(new Runnable() {  
             @Override  
             public void run() {  
+            	
             	String fileName = "/projects.cfg";
         		Integer type = 1;
         		String id = "0";
@@ -55,6 +57,7 @@ public class WelcomeActivity extends Activity implements AnimationListener {
         		}
             }  
         }, 1000);  
+        */
     }  
       
     @Override  

@@ -27,9 +27,11 @@ public class ProjectMapActivity extends Activity {
 	ImageMap mImageMap;
 	private String project_id = "";
 	private IoUtil ioUtil = null;
-	private String url = null;
+	private String mapInfoUrl = null;
+	
 	private String mapUrl = null;
 	private String mapInfo = null;
+	
 	private ProgressDialog progressDialog;  
 	private AsyncHttpClient client;
 
@@ -40,6 +42,7 @@ public class ProjectMapActivity extends Activity {
 		Bundle extras = intent.getExtras();
 		if (extras != null) {
 			project_id = extras.getString("id");
+			mapInfoUrl = "http://beta1.yiluhao.com/ajax/m/pm/id/"+project_id;
 		}
 		ioUtil = new IoUtil();
 		client = new AsyncHttpClient();
@@ -72,18 +75,18 @@ public class ProjectMapActivity extends Activity {
 	private void cancel(){
 		//cancelRequests
 		client.cancelRequests(ProjectMapActivity.this, true);
+		ioUtil.DelFile(project_id, mapUrl);
+		ioUtil.DelFile(project_id, mapInfoUrl);
 	}
 	/**
 	 * 加载地图信息
 	 */
 	private void LoadMapDatas(){
-		url = "http://beta1.yiluhao.com/ajax/m/pm/id/"+project_id;
-		//Log.v("mapUrl = ", url);
-		
+
 		String response = null;
-		if( ioUtil.FileExists(project_id, url)){
+		if( ioUtil.FileExists(project_id, mapInfoUrl)){
 			Log.v("infoCached=", "cached");
-			response = ioUtil.ReadStringFromSD(project_id, url);
+			response = ioUtil.ReadStringFromSD(project_id, mapInfoUrl);
 			mapInfo = response;
 	        mapUrl = ExtractMapUrl(response);
 	        LoadMapPic();
@@ -91,13 +94,13 @@ public class ProjectMapActivity extends Activity {
 		}
 		
 		//AsyncHttpClient client = new AsyncHttpClient();
-		client.get(url, new AsyncHttpResponseHandler() {
+		client.get(mapInfoUrl, new AsyncHttpResponseHandler() {
 		    @Override
 		    public void onSuccess(String response) {
 		    	if(response =="" || response == null){
 		    		return ;
 		    	}
-		    	ioUtil.SaveStringToSD(project_id, url, response);
+		    	ioUtil.SaveStringToSD(project_id, mapInfoUrl, response);
 		    	mapInfo = response;
 		        mapUrl = ExtractMapUrl(response);
 		        LoadMapPic();

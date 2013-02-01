@@ -47,33 +47,31 @@ containing a value of this type.
     }
     public static final class id {
         public static final int about_info_detail=0x7f0b0000;
-        public static final int area1=0x7f0b0012;
-        public static final int area2=0x7f0b0013;
-        public static final int area3=0x7f0b0014;
-        public static final int area4=0x7f0b0015;
-        public static final int area5=0x7f0b0016;
-        public static final int area6=0x7f0b0017;
-        public static final int area7=0x7f0b0018;
-        public static final int area8=0x7f0b0019;
-        public static final int area9=0x7f0b001a;
-        public static final int exit_btn=0x7f0b0007;
+        public static final int area1=0x7f0b0010;
+        public static final int area2=0x7f0b0011;
+        public static final int area3=0x7f0b0012;
+        public static final int area4=0x7f0b0013;
+        public static final int area5=0x7f0b0014;
+        public static final int area6=0x7f0b0015;
+        public static final int area7=0x7f0b0016;
+        public static final int area8=0x7f0b0017;
+        public static final int area9=0x7f0b0018;
+        public static final int exit_btn=0x7f0b0005;
         public static final int img=0x7f0b0001;
-        public static final int info=0x7f0b000e;
+        public static final int info=0x7f0b000c;
         public static final int load_more_text=0x7f0b0002;
-        public static final int map=0x7f0b0010;
-        public static final int menu_settings=0x7f0b001b;
-        public static final int pano_home_tab=0x7f0b0009;
+        public static final int map=0x7f0b000e;
+        public static final int menu_settings=0x7f0b0019;
+        public static final int pano_home_tab=0x7f0b0007;
         public static final int pano_info_detail=0x7f0b0003;
-        public static final int pano_info_tab=0x7f0b000a;
+        public static final int pano_info_tab=0x7f0b0008;
         public static final int pano_map=0x7f0b0004;
-        public static final int pano_map_tab=0x7f0b000b;
-        public static final int pano_tab=0x7f0b0008;
-        public static final int thumb=0x7f0b000c;
-        public static final int title=0x7f0b000d;
-        public static final int welcome_image_view=0x7f0b0011;
-        public static final int zoomControls=0x7f0b000f;
-        public static final int zoom_in_btn=0x7f0b0005;
-        public static final int zoom_out_btn=0x7f0b0006;
+        public static final int pano_map_tab=0x7f0b0009;
+        public static final int pano_tab=0x7f0b0006;
+        public static final int thumb=0x7f0b000a;
+        public static final int title=0x7f0b000b;
+        public static final int welcome_image_view=0x7f0b000f;
+        public static final int zoomControls=0x7f0b000d;
     }
     public static final class layout {
         public static final int about=0x7f030000;

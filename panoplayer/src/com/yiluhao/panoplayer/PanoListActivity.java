@@ -11,6 +11,10 @@ import java.util.Map;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.loopj.android.http.BinaryHttpResponseHandler;
 import com.yiluhao.utils.IoUtil;
 import com.yiluhao.utils.IoUtil.ImageCallBack;
 
@@ -18,6 +22,7 @@ import android.app.ListActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -36,16 +41,20 @@ import android.widget.AdapterView.OnItemClickListener;
 
 public class PanoListActivity extends ListActivity implements OnScrollListener {
 	private List<Map<String, Object>> panoDatas;
-	private String project_id = "";
+	
+	private String project_id = "1";
 	private View mLoadLayout;
 	private ListView mListView;
 	private ListViewAdapter mListViewAdapter;
 	private TextView loadMoreTip;
 
-	private int pageSize = 10;
+	private int pageSize = 15;
 	private int mLastItem = 0;
 	private int mCount = 0;
 	private final Handler mHandler = new Handler();
+	private AsyncHttpClient client;
+	private String projectInfoUrl = null;
+	private IoUtil ioUtil = null;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -63,18 +72,22 @@ public class PanoListActivity extends ListActivity implements OnScrollListener {
 		/**
 		 * 获取ListView组件，并将"加载项"布局添加到ListView组件的Footer中。
 		 */
-		panoDatas = getPanosData();
-		mListView = getListView();
-		mListView.addFooterView(mLoadLayout);
-		/**
-		 * 组ListView组件设置Adapter,并设置滑动监听事件。
-		 */
-		mListViewAdapter = new ListViewAdapter(this);
-		setListAdapter(mListViewAdapter);
-		mListView.setOnScrollListener(this);
-		mListView.setOnItemClickListener(new MainItemClickListener());
+		ioUtil = new IoUtil();
+		client = new AsyncHttpClient();
+		
+		projectInfoUrl = "http://beta1.yiluhao.com/ajax/m/pl/id/"+project_id;
+		getPanosData();
+
 	}
 
+	/**
+	 * 错误提示
+	 */
+	private void getWrong(String msg){
+		Toast.makeText(this, msg, Toast.LENGTH_LONG)
+		.show();
+	}
+	
 	private void startPanoViewerActivity(String id) {
 		Intent intent = new Intent(this, PanoPlayerActivity.class);
 
@@ -139,30 +152,50 @@ public class PanoListActivity extends ListActivity implements OnScrollListener {
 	 * 
 	 * @return
 	 */
-	private List<Map<String, Object>> getPanosData() {
+	private void getPanosData() {
 
-		String configStr = "";
-		String fileName = "/" + project_id + "/" + "panos.cfg";
-		Integer type = 2;
-		String id = project_id;
-		IoUtil ioutil = new IoUtil();
-		try {
-			configStr = ioutil.ReadStringFromSD(fileName, type, id);
-		} catch (IOException e) {
-			e.printStackTrace();
+		String response = null;
+		if( ioUtil.FileExists(project_id, projectInfoUrl)){
+			Log.v("infoCached=", "cached");
+			response = ioUtil.ReadStringFromSD(project_id, projectInfoUrl);
+	        ExtractProjectDatas(response);
+	        LoadListView();
+	        return ;
 		}
-
-		Log.v("Config", configStr);
+		
+		//AsyncHttpClient client = new AsyncHttpClient();
+		client.get(projectInfoUrl, new AsyncHttpResponseHandler() {
+		    @Override
+		    public void onSuccess(String response) {
+		    	if(response =="" || response == null){
+		    		return ;
+		    	}
+		    	ioUtil.SaveStringToSD(project_id, projectInfoUrl, response);
+		        ExtractProjectDatas(response);
+		        LoadListView();
+		        return ;
+		    }
+		    public void onFailure(Throwable error, String content){
+		    	getWrong("获取项目信息失败");
+		    }
+		});
+		
+		return ;
+		
+	}
+	
+	private void ExtractProjectDatas(String content){
+		
 		List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
 		Map<String, Object> map = new HashMap<String, Object>();
 		mCount = 0;
-		if (configStr == "" || configStr == null) {
-			Toast.makeText(this, R.string.net_error, Toast.LENGTH_LONG).show();
+		if (content == "" || content == null) {
+			getWrong("获取项目信息失败，请检查您的网络设置");
 			pageSize = 0;
-			return list;
+			return ;
 		}
 		try {
-			JSONObject jsonObject = new JSONObject(configStr);
+			JSONObject jsonObject = new JSONObject(content);
 			JSONArray jsonArray = jsonObject.getJSONArray("panos");
 			mCount = jsonArray.length();
 			if (pageSize > mCount) {
@@ -174,19 +207,28 @@ public class PanoListActivity extends ListActivity implements OnScrollListener {
 				map.put("id", jsonObject2.getString("id"));
 				map.put("title", jsonObject2.getString("title"));
 				map.put("created", jsonObject2.getString("created"));
-				// map.put("count", jsonObject2.getString("count"));
-				Log.v("PROJECT",
-						jsonObject2.getString("title")
-								+ jsonObject2.getString("thumb"));
 				map.put("thumb", jsonObject2.getString("thumb"));
 				list.add(map);
 			}
 		} catch (JSONException e) {
 			throw new RuntimeException(e);
 		}
-		return list;
+		panoDatas = list;
+		return ;
 	}
 
+	private void LoadListView(){
+		mListView = getListView();
+		mListView.addFooterView(mLoadLayout);
+		/**
+		 * 组ListView组件设置Adapter,并设置滑动监听事件。
+		 */
+		mListViewAdapter = new ListViewAdapter(this);
+		setListAdapter(mListViewAdapter);
+		mListView.setOnScrollListener(this);
+		mListView.setOnItemClickListener(new MainItemClickListener());
+	}
+	
 	class ListViewAdapter extends BaseAdapter {
 		private LayoutInflater mInflater;
 		int count = pageSize;
@@ -225,28 +267,43 @@ public class PanoListActivity extends ListActivity implements OnScrollListener {
 			if (panoDatas.isEmpty()) {
 				return convertView;
 			}
-			IoUtil ioutil = new IoUtil();
-			String fileName = "/" + project_id + "/"
-					+ panoDatas.get(position).get("id") + "/thumb.jpg";
-			holder.thumb.setTag(fileName);
+
+			String thumbFileName = panoDatas.get(position).get("thumb").toString();
+			
+			holder.thumb.setTag(thumbFileName);
 			Bitmap thumb = null;
-			try {
-				thumb = ioutil.ReadPicFromSDThread(fileName,
-						panoDatas.get(position).get("thumb").toString(),
-						holder.thumb, new ImageCallBack() {
-							@Override
-							public void imageLoad(String fileName, Bitmap bitmap) {
-								ImageView imageViewByTag = (ImageView) mListView
-										.findViewWithTag(fileName);
-								if (imageViewByTag != null) {
-									imageViewByTag.setImageBitmap(bitmap);
-								}
-							}
-						});
-			} catch (IOException e) {
-				e.printStackTrace();
+			
+			if(ioUtil.FileExists(project_id, thumbFileName)){
+				Log.v("picCached=", "cached");
+				thumb = ioUtil.ReadBitmapFromSD(project_id, thumbFileName);
+			}
+			else{
+				//AsyncHttpClient client = new AsyncHttpClient();
+				String[] allowedContentTypes = new String[] { "image/png", "image/jpeg", "image/gif" };
+				client.get(thumbFileName, new BinaryHttpResponseHandler(allowedContentTypes, thumbFileName) {
+				    @Override
+				    public void onSuccess(byte[] fileData, String thumbFileName) {
+				    	if(fileData.length<1 || thumbFileName == null || thumbFileName == ""){
+				    		return ;
+				    	}
+				    	//position = 1;
+				    	Bitmap thumbPic = BitmapFactory.decodeByteArray(fileData, 0, fileData.length, null);  
+				    	ioUtil.SavePicToSD(project_id, thumbFileName, thumbPic);
+				    	
+				    	ImageView imageViewByTag = (ImageView) mListView
+								.findViewWithTag(thumbFileName);
+						if (imageViewByTag != null) {
+							imageViewByTag.setImageBitmap(thumbPic);
+						}
+						
+				    }
+				    public void onFailure(Throwable error, String content){
+				    	//getWrong("获取地图文件失败");
+				    }
+				});
 			}
 
+			
 			if (thumb == null) {
 				holder.thumb.setImageResource(R.raw.loading);
 			} else {

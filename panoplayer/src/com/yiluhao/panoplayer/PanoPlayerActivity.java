@@ -2,19 +2,19 @@ package com.yiluhao.panoplayer;
 
 import java.io.IOException;
 
+
 import javax.microedition.khronos.opengles.GL10;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.openpanodroid.panoutils.android.CubicPanoNative;
-
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.panoramagl.PLCubicPanorama;
 import com.panoramagl.PLIPanorama;
 import com.panoramagl.PLIView;
 import com.panoramagl.PLImage;
-import com.panoramagl.PLSpherical2Panorama;
-import com.panoramagl.PLSphericalPanorama;
+
 import com.panoramagl.PLView;
 import com.panoramagl.PLViewEventListener;
 import com.panoramagl.enumeration.PLCubeFaceOrientation;
@@ -22,8 +22,7 @@ import com.panoramagl.hotspots.PLHotspot;
 import com.panoramagl.ios.structs.CGPoint;
 import com.panoramagl.structs.PLPosition;
 import com.panoramagl.utils.PLUtils;
-import com.yiluhao.panoplayer.PanoViewActivity.LoadFaceAsyncTask;
-import com.yiluhao.utils.ImagesUtil;
+
 import com.yiluhao.utils.IoUtil;
 
 import android.app.ProgressDialog;
@@ -38,9 +37,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.ImageButton;
-import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.ZoomControls;
 import android.view.View.OnClickListener;
 
 public class PanoPlayerActivity extends PLView {
@@ -51,6 +48,11 @@ public class PanoPlayerActivity extends PLView {
 	private JSONArray hotspots = null;
 	private Bitmap bfront = null, bback = null, bleft = null, bright = null,
 			bup = null, bdown = null;
+	String front_url = "", back_url = "", left_url = "", right_url = "", up_url = "", down_url = "";
+	
+	private IoUtil ioUtil = null;
+	private String panoInfoUrl = null;
+	private AsyncHttpClient client;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -62,20 +64,85 @@ public class PanoPlayerActivity extends PLView {
 			pano_id = extras.getString("pano_id");
 			project_id = extras.getString("project_id");
 		}
+		else{
+			return ;
+		}
+		panoInfoUrl = "http://beta1.yiluhao.com/ajax/m/pv/id/"+pano_id;
+		
+		ioUtil = new IoUtil();
+		client = new AsyncHttpClient();
+		//sclient = SyncHttpClient();
+		
 		Log.v("ids=", pano_id + "-" + project_id);
-		displayPano();
+		getPanoDetail();
+		//displayPano();
 		// this.loadPanorama(2);
 
 	}
-
+	/**
+	 * 错误提示
+	 */
+	private void getWrong(String msg){
+		Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
+	}
+	/**
+	 * 获取全景图信息
+	 */
+	private boolean getPanoDetail() {
+		if( ioUtil.FileExists(project_id, panoInfoUrl)){
+			Log.v("infoCached=", "cached");
+			String configStr = ioUtil.ReadStringFromSD(project_id, panoInfoUrl);
+			ExtractPanoDatas(configStr);
+			displayPano();
+			return true;
+		}
+		
+		//AsyncHttpClient client = new AsyncHttpClient();
+		client.get(panoInfoUrl, new AsyncHttpResponseHandler() {
+		    @Override
+		    public void onSuccess(String response) {
+		    	if(response =="" || response == null){
+		    		return ;
+		    	}
+		    	ExtractPanoDatas(response);
+		    	ioUtil.SaveStringToSD(project_id, panoInfoUrl, response);
+		    	displayPano();
+		    }
+		    public void onFailure(Throwable error, String content){
+		    	getWrong("获配置信息失败，请检查您的网络设置");
+		    }
+		});
+		return true;
+	}
+	/**
+	 * 解析地图图片信息
+	 */
+	private boolean ExtractPanoDatas(String content){
+		if(content == "" || content ==null){
+			return false;
+		}
+		try {
+			panoInfo = new JSONObject(content).getJSONObject("pano");
+			hotspots = new JSONObject(content).getJSONArray("hotspots");
+		} catch (JSONException e) {
+			throw new RuntimeException(e);
+		}
+		return true;
+	}
+	
 	private void displayPano() {
-		boolean hasData = getPanoDetail();
-		if (hasData) {
+		if (panoInfo != null) {
 			LoadFaceAsyncTask asyncTask = new LoadFaceAsyncTask();
 			asyncTask.execute();
 		}
+		else{
+			getWrong("获配置信息失败，请检查您的网络设置");
+		}
 	}
 
+	/**
+	 * 定义热点点击事件
+	 */
 	private void setHotspotListener() {
 		this.setListener(new PLViewEventListener() {
 			@Override
@@ -117,73 +184,10 @@ public class PanoPlayerActivity extends PLView {
 		startActivity(intent);
 	}
 
-	/**
-	 * 获取全景图信息
-	 */
-	private boolean getPanoDetail() {
-		String configStr = "";
-		String fileName = "/" + project_id + "/" + pano_id + "/" + "pano.cfg";
-		Integer type = 3;
-		String id = pano_id;
-		IoUtil ioutil = new IoUtil();
-		try {
-			configStr = ioutil.ReadStringFromSD(fileName, type, id);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		if (configStr == "" || configStr == null) {
-			Toast.makeText(this, R.string.net_error, Toast.LENGTH_LONG).show();
-			// return list;
-			return false;
-		} else {
-			try {
-				panoInfo = new JSONObject(configStr).getJSONObject("pano");
-				hotspots = new JSONObject(configStr).getJSONArray("hotspots");
-			} catch (JSONException e) {
-				throw new RuntimeException(e);
-			}
-		}
-		return true;
-	}
-
-	private String GetFacePath(Integer face) {
-		String path = "";
-		switch (face) {
-		case 1:
-			path = "/" + project_id + "/" + pano_id + "/s_f.jpg";
-			break;
-		case 2:
-			path = "/" + project_id + "/" + pano_id + "/s_b.jpg";
-			break;
-		case 3:
-			path = "/" + project_id + "/" + pano_id + "/s_l.jpg";
-			break;
-		case 4:
-			path = "/" + project_id + "/" + pano_id + "/s_r.jpg";
-			break;
-		case 5:
-			path = "/" + project_id + "/" + pano_id + "/s_u.jpg";
-			break;
-		case 6:
-			path = "/" + project_id + "/" + pano_id + "/s_d.jpg";
-			break;
-		}
-		;
-
-		return path;
-	}
-
-	private void showErrorTip() {
-		Toast.makeText(this, R.string.net_error, Toast.LENGTH_LONG).show();
-	}
-
-	private Bitmap getDefaultPic() {
-		return PLUtils.getBitmap(this, R.raw.player);
-	}
-
 	public class LoadFaceAsyncTask extends AsyncTask<Integer, Integer, String> {
 
 		private ProgressDialog waitDialog = null;
+		private boolean destroyed = false;
 
 		@Override
 		protected void onPreExecute() {
@@ -201,7 +205,21 @@ public class PanoPlayerActivity extends PLView {
 			waitDialog.setMax(6);
 			waitDialog.show();
 		}
-
+		synchronized void destroy() {
+			destroyed = true;
+			cancel(true);
+		}
+		synchronized boolean isDestroyed() {
+			return destroyed;
+		}
+		@Override
+		protected void onCancelled () {
+			if (isDestroyed()) {
+				return;
+			}
+			waitDialog.dismiss();
+			finish();
+		}
 		/**
 		 * 这里的Integer参数对应AsyncTask中的第一个参数 这里的String返回值对应AsyncTask的第三个参数
 		 * 该方法并不运行在UI线程当中，主要用于异步操作，所有在该方法中不能对UI当中的空间进行设置和修改
@@ -210,7 +228,8 @@ public class PanoPlayerActivity extends PLView {
 		@Override
 		protected String doInBackground(Integer... params) {
 			String status = "ok";
-			String front_url = "", back_url = "", left_url = "", right_url = "", up_url = "", down_url = "";
+			boolean getPicFlag = true;
+			
 			try {
 				front_url = panoInfo.getString("s_f");
 				back_url = panoInfo.getString("s_b");
@@ -218,75 +237,67 @@ public class PanoPlayerActivity extends PLView {
 				right_url = panoInfo.getString("s_r");
 				up_url = panoInfo.getString("s_u");
 				down_url = panoInfo.getString("s_d");
-				// JSONArray hotspotInfo = panoInfo.getJSONArray("hotspot");
 			} catch (JSONException e) {
 				throw new RuntimeException(e);
 			}
 
-			String front = GetFacePath(1);
-			String back = GetFacePath(2);
-			String left = GetFacePath(3);
-			String right = GetFacePath(4);
-			String up = GetFacePath(5);
-			String down = GetFacePath(6);
-
-			IoUtil ioutil = new IoUtil();
-			try {
-				// ImagesUtil imgutil = new ImagesUtil();
-
-				bfront = ioutil.ReadPicFromSD(front, front_url);
-				// bfront = imgutil.translateScale(bfront);
-				publishProgress(1);
-				if (bfront == null) {
-					showErrorTip();
-					bfront = getDefaultPic();
-				}
-
-				bback = ioutil.ReadPicFromSD(back, back_url);
-				// bback = imgutil.translateScale(bback);
-				publishProgress(2);
-				if (bback == null) {
-					showErrorTip();
-					bback = getDefaultPic();
-				}
-
-				bleft = ioutil.ReadPicFromSD(left, left_url);
-				// bleft = imgutil.translateScale(bleft);
-				publishProgress(3);
-				if (bleft == null) {
-					showErrorTip();
-					bleft = getDefaultPic();
-				}
-
-				bright = ioutil.ReadPicFromSD(right, right_url);
-				// bright = imgutil.translateScale(bright);
-				publishProgress(4);
-				if (bright == null) {
-					showErrorTip();
-					bright = getDefaultPic();
-				}
-
-				bup = ioutil.ReadPicFromSD(up, up_url);
-				// bup = imgutil.translateScale(bup);
-				// bup = imgutil.translateRotate(bup);
-				publishProgress(5);
-				if (bup == null) {
-					showErrorTip();
-					bup = getDefaultPic();
-				}
-
-				bdown = ioutil.ReadPicFromSD(down, down_url);
-				// bdown = imgutil.translateRotate(bdown);
-				publishProgress(6);
-				if (bdown == null) {
-					showErrorTip();
-					bdown = getDefaultPic();
-				}
-
-			} catch (IOException e) {
-				e.printStackTrace();
+			if (isCancelled()) {
+				return null;
 			}
-
+			bfront = ioUtil.GetFacePic(project_id, front_url);
+			publishProgress(1);
+			if (bfront == null) {
+				getPicFlag = false;
+			}
+			if (isCancelled()) {
+				//ioUtil.DelFile(project_id, front_url);
+				return null;
+			}
+			bback = ioUtil.GetFacePic(project_id, back_url);
+			publishProgress(2);
+			if (bback == null) {
+				getPicFlag = false;
+			}
+			if (isCancelled()) {
+				//ioUtil.DelFile(project_id, back_url);
+				return null;
+			}
+			bleft = ioUtil.GetFacePic(project_id, left_url);
+			publishProgress(3);
+			if (bleft == null) {
+				getPicFlag = false;
+			}
+			if (isCancelled()) {
+				//ioUtil.DelFile(project_id, left_url);
+				return null;
+			}
+			bright = ioUtil.GetFacePic(project_id, right_url);
+			publishProgress(4);
+			if (bright == null) {
+				getPicFlag = false;
+			}
+			if (isCancelled()) {
+				//ioUtil.DelFile(project_id, right_url);
+				return null;
+			}
+			bup = ioUtil.GetFacePic(project_id, up_url);
+			publishProgress(5);
+			if (bup == null) {
+				getPicFlag = false;
+			}
+			if (isCancelled()) {
+				//ioUtil.DelFile(project_id, up_url);
+				return null;
+			}
+			bdown = ioUtil.GetFacePic(project_id, down_url);
+			publishProgress(6);
+			if (bdown == null) {
+				getPicFlag = false;
+			}
+			if (isCancelled()) {
+				//ioUtil.DelFile(project_id, down_url);
+				return null;
+			}
 			return status;
 		}
 
@@ -297,8 +308,13 @@ public class PanoPlayerActivity extends PLView {
 		@Override
 		protected void onPostExecute(String result) {
 			waitDialog.dismiss();
-			loadPanorama(2);
-			setHotspotListener();
+			if(result == null){
+				getWrong("获取素材出错，请检查您的网络设置");
+			}
+			else{
+				loadPanorama(2);
+			}
+			
 		}
 
 		/**
@@ -313,24 +329,63 @@ public class PanoPlayerActivity extends PLView {
 		}
 
 	}
-
+	
 	private void loadPanorama(int index) {
 		GL10 gl = this.getCurrentGL();
 		PLIPanorama panorama = null;
 		// Lock panoramic view
 		this.setBlocked(true);
-		// Spherical panorama example (supports up 1024x512 texture)
-		/*
-		 * if(index == 0) { panorama = new PLSphericalPanorama();
-		 * ((PLSphericalPanorama)panorama).setImage(gl,
-		 * PLImage.imageWithBitmap(PLUtils.getBitmap(this, R.raw.pano_sphere2),
-		 * false)); } //Spherical2 panorama example (only support 2048x1024
-		 * texture) else if(index == 1) { panorama = new PLSpherical2Panorama();
-		 * ((PLSpherical2Panorama)panorama).setImage(gl,
-		 * PLImage.imageWithBitmap(PLUtils.getBitmap(this, R.raw.pano_sphere2),
-		 * false)); }
-		 */
-		// Cubic panorama example (supports up 1024x1024 texture per face)
+		
+		/*if(bfront == null || bback == null || bleft == null || bright == null || bup == null || bdown == null){
+			getWrong("获取素材出错,请重试");
+			ioUtil.DelFile(project_id, front_url);
+			ioUtil.DelFile(project_id, back_url);
+			ioUtil.DelFile(project_id, left_url);
+			ioUtil.DelFile(project_id, right_url);
+			ioUtil.DelFile(project_id, up_url);
+			ioUtil.DelFile(project_id, down_url);
+			finish();
+			return ;
+		}*/
+		
+		
+		if(bfront == null){
+			ioUtil.DelFile(project_id, front_url);
+			getWrong("获取素材出错,请重试");
+			finish();
+			return ;
+		}
+		if(bleft == null){
+			ioUtil.DelFile(project_id, left_url);
+			getWrong("获取素材出错,请重试");
+			finish();
+			return ;
+		}
+		if(bright == null){
+			ioUtil.DelFile(project_id, right_url);
+			getWrong("获取素材出错,请重试");
+			finish();
+			return ;
+		}
+		if(bback == null){
+			ioUtil.DelFile(project_id, back_url);
+			getWrong("获取素材出错,请重试");
+			finish();
+			return ;
+		}
+		if(bup == null){
+			ioUtil.DelFile(project_id, up_url);
+			getWrong("获取素材出错,请重试");
+			finish();
+			return ;
+		}
+		if(bdown == null){
+			ioUtil.DelFile(project_id, down_url);
+			getWrong("获取素材出错,请重试");
+			finish();
+			return ;
+		}
+		
 		if (index == 2) {
 			PLCubicPanorama cubicPanorama = new PLCubicPanorama();
 			cubicPanorama.setImage(gl, PLImage.imageWithBitmap(bfront, false),
@@ -380,6 +435,9 @@ public class PanoPlayerActivity extends PLView {
 		this.setPanorama(panorama);
 		// Unlock panoramic view
 		this.setBlocked(false);
+		if(hotspots != null){
+			setHotspotListener();
+		}
 	}
 
 	@Override
@@ -399,7 +457,7 @@ public class PanoPlayerActivity extends PLView {
 				startPanoViewerActivity();
 			}
 		});
-		
+		/*
 		// Zoom controls
 		ImageButton zoomIn = (ImageButton) mainView
 				.findViewById(R.id.zoom_in_btn);
@@ -417,6 +475,7 @@ public class PanoPlayerActivity extends PLView {
 				getCamera().zoomOut(true);
 			}
 		});
+		*/
 	}
 	private void startPanoViewerActivity() {
 		// Log.i(LOG_TAG, "id" + id);

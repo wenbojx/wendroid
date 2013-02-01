@@ -59,6 +59,7 @@ public class BinaryHttpResponseHandler extends AsyncHttpResponseHandler {
         "image/jpeg",
         "image/png"
     };
+    private String passTag = null;
 
     /**
      * Creates a new BinaryHttpResponseHandler
@@ -76,6 +77,11 @@ public class BinaryHttpResponseHandler extends AsyncHttpResponseHandler {
         mAllowedContentTypes = allowedContentTypes;
     }
 
+    public BinaryHttpResponseHandler(String[] allowedContentTypes, String param) {
+        this();
+        passTag = param;
+        mAllowedContentTypes = allowedContentTypes;
+    }
 
     //
     // Callbacks to be overridden, typically anonymously
@@ -88,12 +94,22 @@ public class BinaryHttpResponseHandler extends AsyncHttpResponseHandler {
     public void onSuccess(byte[] binaryData) {}
 
     /**
+     * 修改
+     */
+    public void onSuccess(byte[] binaryData, String passTag){}
+    /**
+     * 修改
      * Fired when a request returns successfully, override to handle in your own code
      * @param statusCode the status code of the response
      * @param binaryData the body of the HTTP response from the server
      */
     public void onSuccess(int statusCode, byte[] binaryData) {
-        onSuccess(binaryData);
+    	if(passTag!=null){
+    		onSuccess(binaryData, passTag);
+    	}
+    	else{
+    		onSuccess(binaryData);
+    	}
     }
 
     /**
