@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <maps xmlns:android="http://schemas.android.com/apk/res/android">
     <map name="gridmap">
+        <area name="one" shape="rect" coords="100,100,140,140" id="@+id/area1000001"/>
         <area name="one" shape="rect" coords="118,124,219,226" id="@+id/area1001"/>
         <area name="two" shape="rect" coords="474,374,574,476" id="@+id/area1002"/>        
         <area name="four" shape="rect" coords="710,878,808,980" id="@+id/area1004"/>

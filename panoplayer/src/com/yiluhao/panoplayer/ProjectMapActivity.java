@@ -82,35 +82,51 @@ public class ProjectMapActivity extends Activity {
 	 * 加载地图信息
 	 */
 	private void LoadMapDatas(){
-
 		String response = null;
 		if( ioUtil.FileExists(project_id, mapInfoUrl)){
 			Log.v("infoCached=", "cached");
 			response = ioUtil.ReadStringFromSD(project_id, mapInfoUrl);
 			mapInfo = response;
 	        mapUrl = ExtractMapUrl(response);
+	        if(mapUrl.equals("nomap")){
+	        	//getWrong("没有地图信息");
+		    	//progressDialog.dismiss();
+	        	getMapDatas();
+	        	return ;
+	        }
+	        
 	        LoadMapPic();
 	        return ;
 		}
-		
 		//AsyncHttpClient client = new AsyncHttpClient();
+		getMapDatas();
+		
+		return ;
+	}
+	private void getMapDatas(){
 		client.get(mapInfoUrl, new AsyncHttpResponseHandler() {
 		    @Override
 		    public void onSuccess(String response) {
 		    	if(response =="" || response == null){
 		    		return ;
 		    	}
-		    	ioUtil.SaveStringToSD(project_id, mapInfoUrl, response);
 		    	mapInfo = response;
 		        mapUrl = ExtractMapUrl(response);
+		        if(mapUrl.equals("nomap")){
+		        	getWrong("没有地图信息");
+			    	progressDialog.dismiss();
+		        	return ;
+		        }
+		        ioUtil.SaveStringToSD(project_id, mapInfoUrl, response);
 		        LoadMapPic();
 		    }
 		    public void onFailure(Throwable error, String content){
-		    	getWrong("获取地图配置信息失败");
+		    	
+			    getWrong("获取地图配置信息失败");
+			    progressDialog.dismiss();
+
 		    }
 		});
-		
-		return ;
 	}
 	private void LoadMapPic(){
 		if(mapUrl == null || mapUrl == ""){
@@ -136,6 +152,7 @@ public class ProjectMapActivity extends Activity {
 		    }
 		    public void onFailure(Throwable error, String content){
 		    	getWrong("获取地图文件失败");
+		    	//finish();
 		    }
 		});
 		
@@ -172,23 +189,29 @@ public class ProjectMapActivity extends Activity {
 			return ;
 		}
 
-		mImageMap.loadMap(mapInfo);
-		
-		ArrayList hostspotsList = mImageMap.GetCoords();
-		DrawHotspots newMap = new DrawHotspots();
 		Bitmap markImgG = BitmapFactory.decodeResource(getResources(),
 				R.raw.marker_green);
-		mapPicture = newMap.Draw(mapPicture, hostspotsList, markImgG);
-		markImgG.recycle();
-		System.gc();
+		mImageMap.markImgG = markImgG;
+		//mImageMap.imageWidth = mapPicture.getWidth();
+		//mImageMap.imageHeight = mapPicture.getHeight();
+		mImageMap.mapPicture = mapPicture;
+		
+		mImageMap.loadMap(mapInfo);
+		
+		//ArrayList hostspotsList = mImageMap.GetCoords();
+		//DrawHotspots newMap = new DrawHotspots();
+		//Bitmap markImgG = BitmapFactory.decodeResource(getResources(),R.raw.marker_green);
+		//mapPicture = newMap.Draw(mapPicture, hostspotsList, markImgG);
+		//markImgG.recycle();
+		//System.gc();
 
-		mImageMap.setImageBitmap(mapPicture);
+		mImageMap.setImageBitmap(mImageMap.mapPicture);
 		
 		// add a click handler to react when areas are tapped
 		mImageMap.addOnImageMapClickedHandler(new ImageMap.OnImageMapClickedHandler() {
 					@Override
 					public void onImageMapClicked(int id) {
-						//Log.v("Click_id", " : -------"+id);
+						Log.v("Click_id", " : -------"+id);
 						mImageMap.showBubble(id);
 					}
 

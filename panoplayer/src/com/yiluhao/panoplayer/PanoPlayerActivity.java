@@ -1,8 +1,5 @@
 package com.yiluhao.panoplayer;
 
-import java.io.IOException;
-
-
 import javax.microedition.khronos.opengles.GL10;
 
 import org.json.JSONArray;
@@ -53,6 +50,7 @@ public class PanoPlayerActivity extends PLView {
 	private IoUtil ioUtil = null;
 	private String panoInfoUrl = null;
 	private AsyncHttpClient client;
+	private String panoTitle = null;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -75,6 +73,7 @@ public class PanoPlayerActivity extends PLView {
 		
 		Log.v("ids=", pano_id + "-" + project_id);
 		getPanoDetail();
+		
 		//displayPano();
 		// this.loadPanorama(2);
 
@@ -123,10 +122,13 @@ public class PanoPlayerActivity extends PLView {
 		}
 		try {
 			panoInfo = new JSONObject(content).getJSONObject("pano");
+			panoTitle = panoInfo.getString("title");
+			
 			hotspots = new JSONObject(content).getJSONArray("hotspots");
 		} catch (JSONException e) {
 			throw new RuntimeException(e);
 		}
+		this.setTitle(panoTitle);
 		return true;
 	}
 	
@@ -167,12 +169,19 @@ public class PanoPlayerActivity extends PLView {
 					}
 				}
 				if (linkId != "0" || pano_id_back != pano_id) {
-					startPanoViewerActivity(linkId, project_id);
+					//startPanoViewerActivity(linkId, project_id);
+					loadNewPano(linkId);
 				}
 			}
 		});
 	}
 
+	private void loadNewPano(String sid){
+		pano_id = sid;
+		panoInfoUrl = "http://beta1.yiluhao.com/ajax/m/pv/id/"+pano_id;
+		getPanoDetail();
+		
+	}
 	private void startPanoViewerActivity(String sid, String pid) {
 		Intent intent = new Intent(this, PanoPlayerActivity.class);
 
@@ -405,17 +414,19 @@ public class PanoPlayerActivity extends PLView {
 		int id = 0;
 		float pan = 0f;
 		float tilt = 0f;
+		int transform = 10;
 		// 屏幕宽高
 		WindowManager windowManager = getWindowManager();
 		Display display = windowManager.getDefaultDisplay();
 		int screenWidth = display.getWidth();
 		int screenHeight = display.getHeight();
-		float hotspot = 0.05f;
+		float hotspot = 0.04f;
 		int maxWidth = screenWidth > screenHeight ? screenWidth : screenHeight;
-		// Log.v("Width", Integer.toString(maxWidth));
-		if (maxWidth < 1000) {
-			hotspot = 0.08f;
+		Log.v("Width", Integer.toString(maxWidth));
+		if (maxWidth < 850) {
+			hotspot = 0.06f;
 		}
+		//hotspot = 0.04f;
 		// Add a hotspot
 		for (int i = 0; i < hotspots.length(); i++) {
 			JSONObject jsonObject2 = (JSONObject) hotspots.opt(i);
@@ -423,11 +434,36 @@ public class PanoPlayerActivity extends PLView {
 				id = jsonObject2.getInt("id");
 				pan = jsonObject2.getInt("pan");
 				tilt = jsonObject2.getInt("tilt");
+				transform = jsonObject2.getInt("transform");
+				
 			} catch (JSONException e) {
 				throw new RuntimeException(e);
 			}
+			int resId = R.raw.hotspots10;
+			if(transform == 11){
+				resId = R.raw.hotspots11;
+			}
+			else if(transform == 12){
+				resId = R.raw.hotspots12;
+			}
+			else if(transform == 13){
+				resId = R.raw.hotspots13;
+			}
+			else if(transform == 14){
+				resId = R.raw.hotspots14;
+			}
+			else if(transform == 15){
+				resId = R.raw.hotspots15;
+			}
+			else if(transform == 16){
+				resId = R.raw.hotspots16;
+			}
+			else if(transform == 17){
+				resId = R.raw.hotspots17;
+			}
+			
 			panorama.addHotspot(new PLHotspot(id, PLImage.imageWithBitmap(
-					PLUtils.getBitmap(this, R.raw.hotspot), false), tilt, pan,
+					PLUtils.getBitmap(this, resId), false), tilt, pan,
 					hotspot, hotspot));
 		}
 		// Load panorama

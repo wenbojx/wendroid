@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="welcome">Welcome to GeoPan!</string>
+    <string name="app_name">GeoPan</string>
+<string name="ButtonCameraText">Take a Picture</string>
+<string name="ButtonMapText">View Pictures</string>
+<string name="insertTable">Push To Insert</string>
+<string name="resetTable">Push To Reset</string>
+<string name="selectTable">Push To Select</string>
+
+<string name="strImageCount">Image Number = </string>
+<string name="strTakePicture">Take Next Picture</string>
+<string name="strPostMessage"></string>
+<string name="strNewPanorama">New Panorama</string>
+<string name="strGeneratePanorama">Generate Panorama</string>
+<string name="new_project_dialog_ok">YES</string>
+<string name="new_project_dialog_cancel">Cancel</string>
+<string name="new_project_dialog_title">Warning!</string>
+<string name="new_project_dialog_msg">Incomplete projects will be lost! Are you sure you want to start a new Panorama?</string>
+<string name="strOutput"></string>
+</resources>

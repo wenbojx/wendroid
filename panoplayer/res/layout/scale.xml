@@ -24,7 +24,6 @@
     android:id="@+id/img"  
     android:scaleType="center"  
     android:background="#fff"  
-    android:src="@raw/xx"  
     />  
     <Button
         android:layout_width="200dip"

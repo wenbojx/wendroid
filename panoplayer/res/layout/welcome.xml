@@ -8,6 +8,6 @@
         android:id="@+id/welcome_image_view"   
         android:layout_width="wrap_content"  
         android:layout_height="wrap_content"  
-        android:src="@raw/welcome1"  
+        android:src="@raw/welcome" 
         />  
 </LinearLayout> 

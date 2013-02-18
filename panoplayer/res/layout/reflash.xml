@@ -1,0 +1,20 @@
+<LinearLayout  
+  xmlns:android="http://schemas.android.com/apk/res/android"  
+  android:layout_width="fill_parent"  
+  android:gravity="center"
+  android:minHeight="60dp"
+  android:orientation="horizontal"
+  android:layout_height="fill_parent">  
+  <ProgressBar
+      android:id="@+id/reflash_progressBar"
+      android:layout_width="wrap_content"
+      android:paddingRight="15dp"
+      android:visibility="gone"
+      android:layout_height="wrap_content" />
+  <TextView     
+      android:id="@+id/reflash_datas_text"    
+      android:layout_width="wrap_content"    
+      android:layout_height="wrap_content" 
+      android:text="@string/reflash" />
+
+</LinearLayout>

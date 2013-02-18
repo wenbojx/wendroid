@@ -1,8 +1,5 @@
 package com.yiluhao.panoplayer;
 
-import java.io.IOException;
-
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,7 +13,6 @@ import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.BinaryHttpResponseHandler;
 import com.yiluhao.utils.IoUtil;
-import com.yiluhao.utils.IoUtil.ImageCallBack;
 
 import android.app.ListActivity;
 import android.content.Context;
@@ -44,11 +40,14 @@ public class PanoListActivity extends ListActivity implements OnScrollListener {
 	
 	private String project_id = "1";
 	private View mLoadLayout;
+	private View mReflashLayout;
 	private ListView mListView;
 	private ListViewAdapter mListViewAdapter;
 	private TextView loadMoreTip;
+	private TextView reflashTip;
+	private boolean isAddReflashTip = false;
 
-	private int pageSize = 15;
+	private int pageSize = 10;
 	private int mLastItem = 0;
 	private int mCount = 0;
 	private final Handler mHandler = new Handler();
@@ -68,7 +67,10 @@ public class PanoListActivity extends ListActivity implements OnScrollListener {
 		}
 		mLoadLayout = getLayoutInflater().inflate(R.layout.load_more, null);
 		loadMoreTip = (TextView) mLoadLayout.findViewById(R.id.load_more_text);
-
+		
+		mReflashLayout = getLayoutInflater().inflate(R.layout.reflash, null);
+		reflashTip = (TextView) mReflashLayout.findViewById(R.id.reflash_datas_text);
+		
 		/**
 		 * 获取ListView组件，并将"加载项"布局添加到ListView组件的Footer中。
 		 */
@@ -107,9 +109,89 @@ public class PanoListActivity extends ListActivity implements OnScrollListener {
 	private class MainItemClickListener implements OnItemClickListener {
 		public void onItemClick(AdapterView<?> parent, View view, int position,
 				long id) {
-			String pano_id = (String) panoDatas.get(position).get("id");
-			startPanoViewerActivity(pano_id);
+			//Log.v("aaaaaaa", "bbbbbbbb"+position+"-"+id+"-"+mListViewAdapter.count);
+			if(position>=mListViewAdapter.count){
+				if(position == mCount){
+					//刷新
+					reflashList();
+					//getPanosData();
+				}
+				else{
+					//加载更多
+					if (mListViewAdapter.count <= mCount) {
+						mHandler.postDelayed(new Runnable() {
+							@Override
+							public void run() {
+								int listDisplayTotal = mListViewAdapter.count
+										+ pageSize;
+								if (listDisplayTotal > mCount) {
+									mListViewAdapter.count = mCount;
+									mListView.removeFooterView(mLoadLayout);
+									if(!isAddReflashTip){
+										mListView.addFooterView(mReflashLayout);
+										isAddReflashTip = true;
+									}
+								} else {
+									mListViewAdapter.count += pageSize;
+								}
+								mListViewAdapter.notifyDataSetChanged();
+								mListView.setSelection(mLastItem);
+							}
+						}, 1000);
+					}
+					
+				}
+			}
+			else{
+				String pano_id = (String) panoDatas.get(position).get("id");
+				startPanoViewerActivity(pano_id);
+			}
 		}
+	}
+	//刷新页面
+	public void reflashList(){
+		
+		client.get(projectInfoUrl, new AsyncHttpResponseHandler() {
+		    @Override
+		    public void onSuccess(String response) {
+		    	if(response =="" || response == null){
+		    		return ;
+		    	}
+		    	ioUtil.SaveStringToSD(project_id, projectInfoUrl, response);
+		        ExtractProjectDatas(response);
+		        LoadListView();
+		        /*
+		        if (mListViewAdapter.count < mCount) {
+		        	//Log.v("aaaaaa", "bbbbbbbbbb");
+					mHandler.postDelayed(new Runnable() {
+						@Override
+						public void run() {
+							int listDisplayTotal = mListViewAdapter.count
+									+ pageSize;
+							if (listDisplayTotal > mCount) {
+								mListViewAdapter.count = mCount;
+								mListView.removeFooterView(mLoadLayout);
+								if(!isAddReflashTip){
+									mListView.addFooterView(mReflashLayout);
+									isAddReflashTip = true;
+								}
+							} else {
+								mListViewAdapter.count += pageSize;
+							}
+							mListViewAdapter.notifyDataSetChanged();
+							mListView.setSelection(mLastItem);
+						}
+					}, 1000);
+				}
+				*/
+		        
+		        return ;
+		    }
+		    public void onFailure(Throwable error, String content){
+		    	getWrong("没有网络连接");
+		    }
+		});
+		
 	}
 
 	public void onScroll(AbsListView view, int mFirstVisibleItem,
@@ -117,6 +199,10 @@ public class PanoListActivity extends ListActivity implements OnScrollListener {
 		mLastItem = mFirstVisibleItem + mVisibleItemCount - 1;
 		if (mListViewAdapter.count >= mCount) {
 			mListView.removeFooterView(mLoadLayout);
+			if(!isAddReflashTip){
+				mListView.addFooterView(mReflashLayout);
+				isAddReflashTip = true;
+			}
 		}
 	}
 
@@ -136,6 +222,10 @@ public class PanoListActivity extends ListActivity implements OnScrollListener {
 						if (listDisplayTotal > mCount) {
 							mListViewAdapter.count = mCount;
 							mListView.removeFooterView(mLoadLayout);
+							if(!isAddReflashTip){
+								mListView.addFooterView(mReflashLayout);
+								isAddReflashTip = true;
+							}
 						} else {
 							mListViewAdapter.count += pageSize;
 						}
@@ -155,15 +245,13 @@ public class PanoListActivity extends ListActivity implements OnScrollListener {
 	private void getPanosData() {
 
 		String response = null;
-		if( ioUtil.FileExists(project_id, projectInfoUrl)){
+    	if( ioUtil.FileExists(project_id, projectInfoUrl)){
 			Log.v("infoCached=", "cached");
 			response = ioUtil.ReadStringFromSD(project_id, projectInfoUrl);
 	        ExtractProjectDatas(response);
 	        LoadListView();
 	        return ;
 		}
-		
-		//AsyncHttpClient client = new AsyncHttpClient();
 		client.get(projectInfoUrl, new AsyncHttpResponseHandler() {
 		    @Override
 		    public void onSuccess(String response) {
@@ -176,16 +264,15 @@ public class PanoListActivity extends ListActivity implements OnScrollListener {
 		        return ;
 		    }
 		    public void onFailure(Throwable error, String content){
-		    	getWrong("获取项目信息失败");
+		    	getWrong("没有网络连接");
 		    }
 		});
-		
 		return ;
 		
 	}
 	
 	private void ExtractProjectDatas(String content){
-		
+		//Log.v("aaaaaa", content);
 		List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
 		Map<String, Object> map = new HashMap<String, Object>();
 		mCount = 0;
@@ -219,7 +306,12 @@ public class PanoListActivity extends ListActivity implements OnScrollListener {
 
 	private void LoadListView(){
 		mListView = getListView();
+		if(isAddReflashTip){
+			mListView.removeFooterView(mReflashLayout);
+			isAddReflashTip = false;
+		}
 		mListView.addFooterView(mLoadLayout);
+		//mListView.addFooterView(mReflashLayout);
 		/**
 		 * 组ListView组件设置Adapter,并设置滑动监听事件。
 		 */

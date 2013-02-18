@@ -2,8 +2,6 @@ package com.yiluhao.panoplayer;
 
 
 import android.app.TabActivity;
-
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -23,7 +21,7 @@ public class PanoTabActivity extends TabActivity implements OnCheckedChangeListe
         //requestWindowFeature(Window.FEATURE_NO_TITLE);
         Intent intent = getIntent();
 		Bundle extras = intent.getExtras();
-		String project_id = "1";
+		String project_id = "1001";
 		if (extras != null) {
 			project_id = extras.getString("id");
 		}
@@ -39,7 +37,7 @@ public class PanoTabActivity extends TabActivity implements OnCheckedChangeListe
         bundle_home.putString("id", project_id);  
 		iHome.putExtras(bundle_home);
         tabhost.addTab(tabhost.newTabSpec("iHome")
-        		.setIndicator(getResources().getString(R.string.pano_home), getResources().getDrawable(R.drawable.icon_1_n))
+        		.setIndicator(getResources().getString(R.string.pano_home), getResources().getDrawable(R.drawable.icon_pano_home))
         		.setContent(iHome));
         
 		iInfor = new Intent(this, PanoInfoActivity.class);
@@ -47,7 +45,7 @@ public class PanoTabActivity extends TabActivity implements OnCheckedChangeListe
 		bundle_infor.putString("id", project_id);  
 		iInfor.putExtras(bundle_infor);
 		tabhost.addTab(tabhost.newTabSpec("iInfor")
-	        	.setIndicator(getResources().getString(R.string.pano_info), getResources().getDrawable(R.drawable.icon_2_n))
+	        	.setIndicator(getResources().getString(R.string.pano_info), getResources().getDrawable(R.drawable.icon_pano_about))
 	        	.setContent(iInfor));
 		
 		iMap = new Intent(this, ProjectMapActivity.class);
@@ -55,7 +53,7 @@ public class PanoTabActivity extends TabActivity implements OnCheckedChangeListe
 		bundle_map.putString("id", project_id);  
 		iMap.putExtras(bundle_map);
 		tabhost.addTab(tabhost.newTabSpec("iMap")
-	        	.setIndicator(getResources().getString(R.string.pano_map), getResources().getDrawable(R.drawable.icon_2_n))
+	        	.setIndicator(getResources().getString(R.string.pano_map), getResources().getDrawable(R.drawable.icon_pano_map))
 	        	.setContent(iMap));
     }
    

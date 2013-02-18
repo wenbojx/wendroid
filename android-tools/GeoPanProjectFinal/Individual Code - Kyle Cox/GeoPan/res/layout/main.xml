@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" android:background="@drawable/main_background">
+<FrameLayout android:id="@+id/FrameLayout01" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_weight="500">
+<ImageView  
+        android:layout_width="fill_parent" 
+        android:layout_height="fill_parent" 
+    
+        android:src="@drawable/geopan_icon" android:scaleType="centerInside"/>
+
+<TextView  
+    android:text="@string/welcome" android:gravity="center" android:textSize="30sp" android:typeface="normal" android:textStyle="bold"
+    android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center"
+    android:shadowDx="1.0" android:shadowDy="1.0" android:textColor="#000000" android:shadowColor="#FFFFFF" android:shadowRadius="1.0" android:padding="5dp"/>
+</FrameLayout>
+
+<Button android:layout_height="wrap_content" android:layout_width="fill_parent" android:layout_margin="10dp" android:textSize="24sp" android:id="@+id/ButtonCamera" android:text="@string/ButtonCameraText"></Button>
+
+<Button android:id="@+id/ButtonMap" android:layout_width="fill_parent" android:layout_height="wrap_content" android:textSize="24sp" android:text="@string/ButtonMapText" android:layout_margin="10dp"></Button>
+
+
+
+</LinearLayout>

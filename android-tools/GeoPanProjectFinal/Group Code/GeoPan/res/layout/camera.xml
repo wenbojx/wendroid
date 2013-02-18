@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@drawable/main_background"
+    >
+
+
+<LinearLayout
+	android:layout_width="fill_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android"  android:orientation="horizontal" android:layout_height="wrap_content">
+
+	<Button 
+		android:layout_weight="1" 
+		android:id="@+id/btnNewPanorama" 
+		android:layout_margin="10dp"
+		android:textSize="18sp" 
+	    android:layout_height="fill_parent"
+		android:layout_width="wrap_content" 
+		android:text="@string/strNewPanorama"></Button>
+	
+	<Button 
+		android:id="@+id/btnGeneratePanorama" 
+		android:text="@string/strGeneratePanorama" 
+		android:layout_weight="1"
+		android:layout_margin="10dp"
+		android:textSize="18sp" 
+	    android:layout_height="fill_parent"
+		android:layout_width="wrap_content"></Button>
+
+
+</LinearLayout>
+
+<Button 
+	android:id="@+id/btnTakePicture"
+	android:gravity="center" 
+	android:onClick="btnTakePicture" 
+	android:text="@string/strTakePicture" 
+	android:layout_margin="10dp"
+	android:textSize="24sp"
+	android:padding="15dp" 
+	android:layout_height="wrap_content" 
+	android:layout_width="match_parent"
+	>
+</Button>
+
+
+<TextView  
+    android:layout_width="fill_parent" 
+    android:layout_height="wrap_content" 
+    android:text="@string/strImageCount"
+    android:id="@+id/txtImageCount" 
+	android:textSize="20sp" 
+android:gravity="center"/>
+
+<ImageView 
+	android:id="@+id/imgPicture" 
+	android:layout_width="wrap_content" 
+	android:layout_height="wrap_content"
+	android:gravity="center" android:layout_gravity="center_horizontal">
+</ImageView>
+
+<TextView  
+    android:layout_width="fill_parent" 
+    android:layout_height="wrap_content" 
+    android:text="@string/strPostMessage"
+    android:id="@+id/txtPostMessage" 
+/>
+
+<TextView android:id="@+id/out_text" 
+android:layout_height="wrap_content" 
+android:layout_width="fill_parent" 
+android:layout_weight="3" 
+android:text="@string/strOutput"
+android:layout_gravity="top|bottom|left|right|center_vertical|fill_vertical|center_horizontal|fill_horizontal|center|fill|clip_vertical|clip_horizontal" ></TextView>	
+
+
+
+</LinearLayout>

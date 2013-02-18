@@ -31,19 +31,19 @@
     		<RadioButton 
     			android:layout_marginTop="2.0dip"
     			android:text="@string/pano_home"
-    			android:drawableTop="@drawable/icon_1_n"
+    			android:drawableTop="@drawable/icon_pano_home"
     			android:id="@+id/pano_home_tab"
     			style="@style/main_tab_bottom"/>
     		<RadioButton 
     			android:layout_marginTop="2.0dip"
     			android:text="@string/pano_info"
-    			android:drawableTop="@drawable/icon_2_n"
+    			android:drawableTop="@drawable/icon_pano_about"
     			android:id="@+id/pano_info_tab"
     			style="@style/main_tab_bottom"/>
     		<RadioButton 
     			android:layout_marginTop="2.0dip"
     			android:text="@string/pano_map"
-    			android:drawableTop="@drawable/icon_2_n"
+    			android:drawableTop="@drawable/icon_pano_map"
     			android:id="@+id/pano_map_tab"
     			style="@style/main_tab_bottom"/>
     		

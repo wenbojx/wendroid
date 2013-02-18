@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="welcome">Welcome to GeoPan!</string>
+    <string name="app_name">GeoPan</string>
+<string name="ButtonCameraText">Take a Picture</string>
+<string name="ButtonMapText">View Pictures</string>
+<string name="insertTable">Push To Insert</string>
+<string name="resetTable">Push To Reset</string>
+<string name="selectTable">Push To Select</string>
+
+</resources>

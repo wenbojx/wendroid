@@ -25,7 +25,7 @@ import android.widget.ImageView;
 
 public class IoUtil {
 	public boolean saveFile = true;
-	public boolean projectList = false;//是否含项目列表的项目
+	public boolean projectList = true;//是否含项目列表的项目
 	private final static String ALBUM_PATH = Environment
 			.getExternalStorageDirectory() + "/yiluhao"; // Sd卡目录
 

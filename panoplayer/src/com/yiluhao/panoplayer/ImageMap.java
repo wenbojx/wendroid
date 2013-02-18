@@ -5,10 +5,10 @@ package com.yiluhao.panoplayer;
 import java.io.InputStream;
 
 
+
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -27,6 +27,7 @@ import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Typeface;
+import android.graphics.Bitmap.Config;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
@@ -129,7 +130,11 @@ public class ImageMap extends ImageView {
 	int mViewHeight=-1;
 	int mViewWidth=-1;
 	InputStream inputStream;
-	ArrayList hostspotsList = new ArrayList();
+	//ArrayList hostspotsList = new ArrayList();
+	Bitmap markImgG=null;
+	//float imageWidth = 0;
+	//float imageHeight = 0;
+	Bitmap mapPicture = null;
 
 	/*
 	 * containers for the image map areas
@@ -176,9 +181,9 @@ public class ImageMap extends ImageView {
 		}
 	}
 
-	public ArrayList GetCoords(){
+	/*public ArrayList GetCoords(){
 		return hostspotsList;
-	}
+	}*/
 	/**
 	 * parse the maps.xml resource and pull out the areas
 	 * @param map - the name of the map to load
@@ -190,20 +195,43 @@ public class ImageMap extends ImageView {
 			JSONObject jsonObject = new JSONObject(mapInfo);
 			coordsArray = jsonObject.getJSONArray("coords");
 			
+			int imageWidth = mapPicture.getWidth();
+			int imageHeight = mapPicture.getHeight();
+			
+			Bitmap newb = Bitmap.createBitmap(imageWidth , imageHeight, Config.ARGB_8888);
+			Canvas canvas = new Canvas(newb);  
+			canvas.drawBitmap(mapPicture, 0, 0, null);// 在 0，0坐标开始画入原图片src
+			
 			for (int i = 0; i < coordsArray.length(); i++) {
 				JSONObject singleObject = (JSONObject) coordsArray.opt(i);
 				//String a = singleObject.getString("id");
-				String shape = "poly";
+				String shape = "rect";
            	 	String coords = singleObject.getString("coords");
-           	 	String id = "@+id/area"+i;
+           	 	
+           	 	String[] splitCoords = coords.split(",");
+           	 	int left = Integer.parseInt(splitCoords[0])+15;
+           	 	int top = Integer.parseInt(splitCoords[1])+20;
+           	 	int right = Integer.parseInt(splitCoords[2])+15;
+           	 	int bottom = Integer.parseInt(splitCoords[7])+15;
+           	 	coords = left+","+ top+","+right+","+bottom;
+           	 //Log.v("aaaa", coords);
+           	 
+	           	 int positionLeft =   left;
+	           	 int positionTop =  top;
+	 			//Log.v("position", "left:"+positionLeft+" top:"+positionTop);
+	           	 canvas.drawBitmap(markImgG, positionLeft, positionTop, null);
+           	 	
+	           	 int js = i+1;
+           	 //Log.v("aaaa", coords);
+           	 	String id = "@+id/area"+js;
            	 	String link_id = singleObject.getString("linkScene");
 	           	String keyId = "0";
 	        	String[] ht = {keyId, coords};
-	        	hostspotsList.add(ht);
+	        	//hostspotsList.add(ht);
         	 
            	 	String name = singleObject.getString("linkTitle");
            	 	if ((shape != null) && (coords != null)) {
-           	 	//Log.v("aaaa==", shape+"|"+name+"|"+coords+"|"+id);
+           	 	Log.v("aaaa==", shape+"|"+name+"|"+coords+"|"+id);
         		a = addShape(shape,name,coords,id);
         		 if (a != null) {
         			 // add all of the area tag attributes
@@ -232,6 +260,9 @@ public class ImageMap extends ImageView {
         		 }
         	 }		           
 			}
+			canvas.save(Canvas.ALL_SAVE_FLAG);  
+			canvas.restore();
+			mapPicture = newb;
 			
 		} catch (JSONException e) {
 			throw new RuntimeException(e);
@@ -249,18 +280,22 @@ public class ImageMap extends ImageView {
 	 */
 	private Area addShape( String shape, String name, String coords, String id) {	
 		Area a = null;
-		String rid = id.replace("@+id/", "");
-		int _id=0;
-		
-		try {
+		//String rid = id.replace("@+id/", "");
+		//int _id=0;
+		String rid = id.replace("@+id/area", "");
+		int _id = Integer.parseInt(rid);
+		/*try {
 			Class<R.id> res = R.id.class;
 			Field field = res.getField(rid);
 		    _id = field.getInt(null);
+		    Log.v("namesss", _id+"---"+name);
 		}
 		catch (Exception e) {
 		   _id = 0;
-		}
+		}*/
+		
 		if (_id != 0) {
+			
 			if (shape.equalsIgnoreCase("rect")) {
 				String[] v = coords.split(",");
 				if (v.length == 4) {
@@ -1226,7 +1261,9 @@ public class ImageMap extends ImageView {
 				float x = (getOriginX() * mResizeFactorX) + mScrollLeft - 17;
 				float y = (getOriginY() * mResizeFactorY) + mScrollTop - 17;
 				canvas.drawBitmap(_decoration, x, y, null);
+				
 			}
+			
 		}
 		
 		abstract boolean isInArea(float x, float y);

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.ece594bb.geopan.ImageZoomView
+    xmlns:android="http://schemas.android.com/apk/res/android" 
+    android:id="@+id/zoomview"
+    android:layout_width="fill_parent" 
+    android:layout_height="fill_parent" 
+    />
